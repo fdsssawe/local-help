@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "~/server/db";
 
+export const dynamic = "force-dynamic"
 
 const mockUrls = [
   "https://utfs.io/f/8f50c735-de12-4587-9f19-8bc776443b38-3sad18.jpg",
@@ -23,7 +24,7 @@ export default async function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <h1 className="text-3xl font-bold">Welcome to Next.js</h1>
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-4" >
         {posts.map((post) => (
           <div key={post.id}>
               <h2>{post.name}</h2>
