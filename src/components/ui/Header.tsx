@@ -1,5 +1,6 @@
 import React from 'react'
 import { LogIn } from 'lucide-react'
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 
 export default function Header() {
 
@@ -18,9 +19,12 @@ export default function Header() {
             <a className="mr-5 hover:text-gray-900">Third Link</a>
             <a className="mr-5 hover:text-gray-900">Fourth Link</a>
             </nav>
-            <button className="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">Sign In
-            <LogIn size="16" className="ml-2" />
-            </button>
+            <SignedOut>
+            <SignInButton />
+            </SignedOut>
+            <SignedIn>
+            <UserButton />
+            </SignedIn>
         </div>
         </header>
     )

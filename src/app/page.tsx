@@ -5,7 +5,9 @@ export const dynamic = "force-dynamic"
 
 export default async function HomePage() {
 
-  const images = await db.query.posts.findMany()
+  const images = await db.query.posts.findMany({
+    orderBy: (model, {desc}) => desc(model.id),
+  })
 
 
   return (
@@ -15,6 +17,7 @@ export default async function HomePage() {
         {images.map((image, index) => (
             <a key={index}>
               <img src={image.url} alt="image" className="w-40 h-40 object-cover" />
+              <span>{image.name}</span>
             </a>
         ))}
       </div>
