@@ -1,5 +1,4 @@
 import React from 'react'
-import { LogIn } from 'lucide-react'
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import { Skeleton } from "~/components/ui/skeleton";
 import Image from 'next/image';
@@ -25,8 +24,8 @@ export default function Header() {
             <div className='relative overflow-hidden w-7 h-7'>
             <SignedIn>
             <UserButton />
-            </SignedIn>
             <Skeleton className='w-7 h-7 -z-10 absolute rounded-full'/>
+            </SignedIn>
             </div>
         </div>
         </header>

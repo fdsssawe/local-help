@@ -1,16 +1,13 @@
+
 import Image from "next/image";
-import { db } from "~/server/db";
 import hero from "../../assets/hero.svg";
-import MapContainer from "~/components/ui/MapContainer";
 export const dynamic = "force-dynamic"
+import { createPost } from "~/server/queries";
+
 
 export default async function HomePage() {
 
-  const images = await db.query.posts.findMany({
-    orderBy: (model, {desc}) => desc(model.id),
-  })
-
-
+  await createPost({description : "dsa", latitude : "3131", longitude : '3131', skill : 'fsfdsfs'})
   return (
       <div className="w-full flex text-text flex-col items-center h-full">
       <div className="w-full flex flex-row items-center h-[calc(100vh-105px)] ">
