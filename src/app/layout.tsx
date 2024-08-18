@@ -2,7 +2,7 @@ import "~/styles/globals.css";
 import Header from "~/components/ui/Header";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { ClerkProvider} from '@clerk/nextjs'
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -14,7 +14,13 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        layout: {
+          unsafe_disableDevelopmentModeWarnings: true,
+        },
+      }}
+    >
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
       <Header/>
