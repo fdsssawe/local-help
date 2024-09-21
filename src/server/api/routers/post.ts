@@ -4,19 +4,17 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { posts } from "~/server/db/schema";
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
 
   create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
+    .input(z.object({ skill: z.string(), description: z.string(), latitude: z.string(), longitude: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.insert(posts).values({
-        skill : input.name,
+        latitude : input.latitude,
+        longitude : input.longitude,
+        skill : input.skill,
+        description : input.description,
+        userId : input.userId,
+        createdAt: new Date(),
       });
     }),
 
