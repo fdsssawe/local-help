@@ -1,13 +1,13 @@
 import type { Config } from "tailwindcss"
 
 const config = {
-  darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
 	],
+  darkMode: "media",
   prefix: "",
   theme: {
     container: {
@@ -23,11 +23,11 @@ const config = {
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         foreground: "hsl(var(--foreground))",
-        "primary": "#7bb059",
-        "secondary": "#a5d4c7",
-        "accent": "#7bbac0",
-        "background": "#f8fbf6",
-        "text": "#12190c",
+        primary: "hsla(var(--primary))",
+        secondary:"hsla(var(--secondary))",
+        accent: "hsla(var(--accent))",
+        background: "hsla(var(--background))",
+        text: "hsla(var(--text))",
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
@@ -59,14 +59,27 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        aurora: {
+          from: {
+            backgroundPosition: "50% 50%, 50% 50%",
+          },
+          to: {
+            backgroundPosition: "350% 50%, 350% 50%",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        aurora: "aurora 60s linear infinite",
+      },
+      fontFamily: {
+        primary: ["Inter", "sans-serif"],
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config
+
 
 export default config

@@ -6,20 +6,21 @@ import { posts } from "./db/schema";
 // import { redirect } from "next/navigation";
 // import analyticsServerClient from "./analytics";
 import type { Post } from "~/types";
+import { getUserLocation } from "~/components/ui/MapContainer";
 
 export async function createPost(post : Post) {
+  const location = await getUserLocation()
   const user = auth();
   if (!user.userId) throw new Error("Unauthorized");
-  const { skill, description, latitude, longitude } = post;
+  const { skill, description } = post;
   const newPost = await db.insert(posts).values({
-  latitude : latitude,
-  longitude : longitude,
+  latitude : location[0].toString(),
+  longitude : location[1].toString(),
   skill : skill,
   description : description,
   userId : user.userId,
   createdAt: new Date(),
   });
-  console.log(newPost);
   return newPost;
 }
 
