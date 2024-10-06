@@ -16,7 +16,7 @@ export default function Header() {
             <SignedIn>
             <a className="mr-5 hover:text-gray-900" href='/post'>Post</a>
             </SignedIn>
-            <a className="mr-5 hover:text-gray-900">Neighbour&apos;s posts</a>
+            <a className="mr-5 hover:text-gray-900" href='/local'>Local&apos;s posts</a>
             <a className="mr-5 hover:text-gray-900">About</a>
             <a className="mr-5 hover:text-gray-900">Fourth Link</a>
             </nav>

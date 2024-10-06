@@ -29,7 +29,7 @@ const FormSchema = z.object({
   }),
 })
 
-export function CreatePost() {
+export function GetLocal() {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const utils = api.useUtils();
   const createPost = api.post.create.useMutation({
@@ -57,15 +57,15 @@ export function CreatePost() {
     }
   }, []);
 
-  // const { data: CreatePost, isLoading } = api.post.getNearbyPosts.useQuery(
-  //   {
-  //     latitude: location?.latitude.toString() ?? "0",
-  //     longitude: location?.longitude.toString() ?? "0",
-  //   },
-  //   {
-  //     enabled: !!location, // Only run the query if location is available
-  //   }
-  // );
+  const { data: latestPost, isLoading } = api.post.getNearbyPosts.useQuery(
+    {
+      latitude: location?.latitude.toString() ?? "0",
+      longitude: location?.longitude.toString() ?? "0",
+    },
+    {
+      enabled: !!location, // Only run the query if location is available
+    }
+  );
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     createPost.mutate({
@@ -87,13 +87,13 @@ export function CreatePost() {
   if (!location) {
     return (
       <div className="w-full max-w-[18rem]">
-      {/* {isLoading ? (
+      {isLoading ? (
         <p>Loading posts...</p>
-      ) : CreatePost && CreatePost.rows.length > 0 ? (
-        <p className="truncate">Your most recent post {CreatePost.rows[0]?.description}</p>
+      ) : latestPost && latestPost.rows.length > 0 ? (
+        <p className="truncate">Your most recent post {latestPost.rows[0]?.description}</p>
       ) : (
         <p>You have no posts yet.</p>
-      )} */}
+      )}
       <div className="w-full space-y-4 h-[216px]">
         <div className="w-full h-[72px] space-y-2">
         <Skeleton className="w-[27px] h-[19px]"/>
@@ -111,13 +111,18 @@ export function CreatePost() {
 
   return (
     <div className="w-full max-w-[18rem]">
-      {/* {isLoading ? (
+      {isLoading ? (
         <p>Loading posts...</p>
-      ) : CreatePost && CreatePost.rows.length > 0 ? (
-        <p className="truncate">Your most recent post {CreatePost.rows[0]?.description}</p>
+      ) : latestPost && latestPost.rows.length > 0 ? (
+        latestPost.rows.map((post: Post) => (
+          <div key={post.id}>
+            <h2>{post.skill}</h2>
+            <p className="border-b">{post.description}</p>
+          </div>
+        ))
       ) : (
         <p>You have no posts yet.</p>
-      )} */}
+      )}
       <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
         <FormField
