@@ -1,4 +1,5 @@
 export interface Post {
+    id?: string;
     skill: string;
     description: string;
     latitude: string;

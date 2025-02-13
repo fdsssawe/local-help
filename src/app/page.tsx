@@ -20,7 +20,7 @@ export default async function HomePage() {
         </div>
         </div>
       </div>
-      <div className="h-full w-full items-start lg:mt-20 flex">
+      <div className="h-full w-full items-start lg:mt-[250px] flex">
         <Image src={hero} alt="Hero Image" className="" />
       </div>
       </div>
