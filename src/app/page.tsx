@@ -10,7 +10,7 @@ export default async function HomePage() {
     <HydrateClient>
       <div className="w-full flex text-text flex-col items-center h-full relative">
       <div className="w-full flex flex-row items-center h-[calc(100vh-105px)] ">
-      <div className="h-full w-full flex justify-center items-center flex-col">
+      <div className="h-full max-h-[700px] w-full flex justify-center items-center flex-col">
         <div className="lg:ml-10">
         <h1 className="text-[4.8rem] font-[700] leading-[4rem]">Trade Skills <br/>Build <p className="bg-gradient-to-r from-primary via-accent to-secondary inline-block text-transparent bg-clip-text leading-[7rem]">Community</p></h1>
         <h2 className=" leading-[2rem] font-medium">Connect with your community and share your skills.<br/> Local Help is your local hub for skill swapping and building connections.</h2>
@@ -20,7 +20,7 @@ export default async function HomePage() {
         </div>
         </div>
       </div>
-      <div className="h-full w-full items-start lg:mt-[250px] flex">
+      <div className="max-h-[700px] w-full items-start flex">
         <Image src={hero} alt="Hero Image" className="" />
       </div>
       </div>

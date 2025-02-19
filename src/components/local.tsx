@@ -20,7 +20,6 @@ export function GetLocal() {
 
   useEffect(() => {
     if (typeof window !== "undefined" && 'geolocation' in navigator) {
-      // Retrieve latitude & longitude coordinates from `navigator.geolocation` Web API
       navigator.geolocation.getCurrentPosition(({ coords }) => {
         const { latitude, longitude } = coords;
         setLocation({ latitude, longitude });
@@ -39,7 +38,7 @@ export function GetLocal() {
   );
 
   return (
-    <div className="w-full lg:max-w-[600px] flex flex-col gap-4">
+    <div className="w-full lg:max-w-[600px] flex flex-col gap-4 text-center">
       {isLoading || !location ? (
         <div className="w-full h-40 flex justify-center items-center">
           <Spinner size="10" className="text-primary"/>
@@ -52,7 +51,11 @@ export function GetLocal() {
                     <CardDescription>{post.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4">
-                    {post.distance}
+                  {typeof post.distance === "number"
+                  ? post.distance >= 1 
+                    ? `${post.distance.toFixed(1)} km` // Show 1.5 km format
+                    : `${Math.round(post.distance * 1000)} m` // Show 600m format
+                  : "Unknown distance"}
                   </CardContent>
                 </Card>
                 ))

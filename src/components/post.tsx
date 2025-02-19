@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "~/components/ui/form"
 import { Skeleton } from "./ui/skeleton";
+import { useUser } from "@clerk/nextjs";
 
 const FormSchema = z.object({
   skill: z.string().min(2, {
@@ -32,6 +33,7 @@ const FormSchema = z.object({
 export function CreatePost() {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const utils = api.useUtils();
+  const { user } = useUser()
   const createPost = api.post.create.useMutation({
     onSuccess: async () => {
       await utils.post.invalidate();
@@ -68,9 +70,10 @@ export function CreatePost() {
   // );
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
+    
     createPost.mutate({
         ...data,
-        userId: "fdf", // Assuming userId is hardcoded for now
+        userId: user?.id ?? "",
         latitude: location?.latitude.toString() ?? "0",
         longitude: location?.longitude.toString() ?? "0",
     })

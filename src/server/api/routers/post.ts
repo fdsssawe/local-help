@@ -49,7 +49,7 @@ export const postRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const lat = parseFloat(input.latitude);
       const lon = parseFloat(input.longitude);
-      const radiusInKm = 0.3; // 300 meters
+      const radiusInKm = 1; // 300 meters
 
       const nearbyPosts = await sql`
   SELECT * FROM (
