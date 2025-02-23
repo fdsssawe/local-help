@@ -13,6 +13,7 @@ import {
 } from "~/components/ui/card"
 import Spinner from "./ui/spinner";
 import { Button } from "./ui/button";
+import ChatWindow from "./chat";
 
 
 export function GetLocal() {
@@ -62,6 +63,7 @@ export function GetLocal() {
       ) : (
         <p>There is no posts in yout area.</p>
       )}
+    <ChatWindow otherUserId="user_2mwNdGfBWORQ85TqZkN1fBWr47z" userId="user_2kpS4pmEoL3bNZQEUimFisAuzBa"/>
     </div>
   );
 }

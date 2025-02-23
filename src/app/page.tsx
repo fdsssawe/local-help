@@ -5,7 +5,6 @@ export const dynamic = "force-dynamic"
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function HomePage() {
-
   return (
     <HydrateClient>
       <div className="w-full flex text-text flex-col items-center h-full relative">

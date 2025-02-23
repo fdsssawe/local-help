@@ -5,7 +5,9 @@ import {
   serial,
   timestamp,
   varchar,
-  numeric
+  numeric,
+  uuid,
+  text
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `local_help_${name}`);
@@ -31,5 +33,15 @@ export const posts = createTable(
     nameIndex: index("name_idx").on(example.userId),
   })
 );
+
+
+export const chats = createTable("chats", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  senderId: text("sender_id").notNull(),
+  receiverId: text("receiver_id").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 
 
