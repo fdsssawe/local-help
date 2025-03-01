@@ -14,11 +14,12 @@ import {
 import Spinner from "./ui/spinner";
 import { Button } from "./ui/button";
 import ChatWindow from "./chat";
+import { useUser } from "@clerk/nextjs";
 
 
 export function GetLocal() {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-
+  const { user } = useUser();
   useEffect(() => {
     if (typeof window !== "undefined" && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(({ coords }) => {
@@ -63,7 +64,7 @@ export function GetLocal() {
       ) : (
         <p>There is no posts in yout area.</p>
       )}
-    <ChatWindow otherUserId="user_2mwNdGfBWORQ85TqZkN1fBWr47z" userId="user_2kpS4pmEoL3bNZQEUimFisAuzBa"/>
+    <ChatWindow/>
     </div>
   );
 }

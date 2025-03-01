@@ -1,82 +1,87 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { api } from '~/trpc/react'; // Ensure correct import
-import { listenForMessages } from '~/lib/supabase'; // Make sure this is correctly set up for real-time updates
+import { useEffect, useState } from "react";
+import { api } from "~/trpc/react"; // Adjust this based on your TRPC setup
+import { useUser } from "@clerk/nextjs"; // Clerk authentication
+import { supabase } from "~/lib/supabase";
 
-type Message = {
-  senderId: string;
-  receiverId: string;
+interface Message {
+  id: number;
+  senderid: string;
+  receiverid: string;
   message: string;
-};
+  createdAt: string;
+}
 
-const ChatWindow: React.FC<{ userId: string; otherUserId: string }> = ({ userId, otherUserId }) => {
+export default function ChatPage() {
+  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState<string>('');
-  const utils = api.useUtils();
+  const [newMessage, setNewMessage] = useState("");
+  const receiverid = "user_2mwNdGfBWORQ85TqZkN1fBWr47z"; // Replace with the actual receiver ID
 
-  // Fetch existing messages
-  const { data, isLoading, error } = api.chat.getMessages.useQuery({ userId });
-
-  useEffect(() => {
-    if (data) {
-      setMessages(data);
-    }
-  }, [data]);
-
-  // Listen for new messages in real time
-  useEffect(() => {
-    const unsubscribe = listenForMessages(userId, (message: Message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
-
-    return () => unsubscribe(); // Unsubscribe when component unmounts
-  }, [userId]);
-
-  const sendMessageMutation = api.chat.sendMessage.useMutation({
-    onSuccess: async () => {
-      await utils.chat.invalidate();
-    },
+  const { mutate: sendMessage } = api.chat.sendMessage.useMutation({
+    onSuccess: () => setNewMessage(""),
   });
 
-  const sendMessage = async () => {
-    if (newMessage.trim()) {
-      try {
-        await sendMessageMutation.mutateAsync({ receiverId: otherUserId, message: newMessage });
-        setNewMessage('');
-      } catch (error) {
-        console.error('Error sending message:', error);
-      }
+  const { data: initialMessages } = api.chat.getMessages.useQuery(
+    { receiverid: receiverid },
+    { enabled: !!user }
+  );
+
+  useEffect(() => {
+    if (initialMessages) {
+      setMessages(initialMessages);
     }
+  }, [initialMessages]);
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("chat")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chats" },
+        (payload) => {
+          setMessages((prev) => [...prev, payload.new as Message]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() === "") return;
+    sendMessage({ receiverId: receiverid, message: newMessage });
   };
-
   return (
-    <div className="chat-window">
-      <div className="messages">
-        {isLoading ? (
-          <p>Loading messages...</p>
-        ) : error ? (
-          <p>Error loading messages: {error.message}</p>
-        ) : (
-          messages.map((msg, index) => (
-            <div key={index} className={msg.senderId === userId ? 'sent' : 'received'}>
-              <p>{msg.message}</p>
-            </div>
-          ))
-        )}
+    <div className="flex flex-col h-screen p-4 bg-gray-100">
+      <div className="flex-1 overflow-y-auto bg-white p-4 rounded shadow">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`p-2 my-2 rounded max-w-xs ${
+              msg.receiverid === user?.id ? "bg-blue-500 text-white self-end" : "bg-gray-200 text-black"
+            }`}
+          >
+            {msg.message}
+          </div>
+        ))}
       </div>
-
-      <div className="input">
+      <div className="flex mt-2">
         <input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message"
+          className="flex-1 p-2 border rounded"
+          placeholder="Type a message..."
         />
-        <button onClick={sendMessage}>Send</button>
+        <button onClick={handleSendMessage} className="ml-2 px-4 py-2 bg-blue-500 text-white rounded">
+          Send
+        </button>
       </div>
     </div>
   );
-};
-
-export default ChatWindow;
+}
