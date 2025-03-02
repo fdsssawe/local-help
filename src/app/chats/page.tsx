@@ -1,34 +1,50 @@
-"use client";
+'use client'
 
 import { api } from "~/trpc/react";
-import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
+import { useRef, useEffect } from "react";
+import Spinner from "~/components/ui/spinner";
+import { useRouter } from "next/navigation";
 
-export default function ConversationsList() {
-  const { user } = useUser();
-  const { data: conversations, isLoading } = api.chat.getConversations.useQuery();
+const ChatList = () => {
+    const router = useRouter();
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+        api.chat.getUserChats.useInfiniteQuery(
+            { limit: 10 },
+            {
+                getNextPageParam: (lastPage) => lastPage.nextCursor,
+            }
+        );
 
-  if (isLoading) return <p>Loading chats...</p>;
-  if (!conversations?.length) return <p>No conversations found.</p>;
+    const chats = data?.pages.flatMap((page) => page.chats) ?? [];
+    const loadMoreRef = useRef(null);
 
-  return (
-    <div>
-      <h2 className="text-lg font-semibold mb-2">Your Chats</h2>
-      <ul>
-        {conversations.map((chat) => {
-          const otherUser = chat.sender_id === user?.id ? chat.receiver : chat.sender;
-          return (
-            <li key={chat.id} className="border p-2 mb-2 rounded">
-              <Link href={`/chat/${chat.id}`}>
-                <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                  <img src={otherUser.avatar} alt="avatar" className="w-8 h-8 rounded-full" />
-                  <span>{otherUser.name}</span>
+    useEffect(() => {
+        if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0]?.isIntersecting) {
+                fetchNextPage();
+            }
+        });
+
+        observer.observe(loadMoreRef.current);
+        return () => observer.disconnect();
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    return (
+        <div className='w-full h-full flex pt-10 flex-col items-center relative'>
+            <div className="w-full lg:max-w-[600px] flex flex-col gap-4 text-center">
+                {chats.map((chat) => (
+                    <div key={chat.id} className="h-20 flex justify-center items-center rounded-xl border-[0.5px] shadow-md border-primary/40 cursor-pointer hover:bg-primary/10" onClick={() => router.push(`/chat/${chat.id}`)}>
+                        {chat.post_title}
+                    </div>
+                ))}
+                <div ref={loadMoreRef} className="w-full h-40 flex justify-center items-center">
+                    {isFetchingNextPage && <Spinner size="10" className="text-primary" />}
                 </div>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
+            </div>
+        </div>
+    );
+};
+
+export default ChatList;

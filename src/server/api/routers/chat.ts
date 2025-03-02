@@ -6,14 +6,12 @@ import { eq, or, and } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "~/lib/supabase";
 
-// Fetch user info from Clerk
 const getUserDetails = async (userId: string) => {
   const user = await clerkClient.users.getUser(userId);
   return { name: user?.firstName, avatar: user?.imageUrl };
 };
 
 export const chatRouter = createTRPCRouter({
-  // ✅ Start a conversation
 
   startChat: protectedProcedure
   .input(z.object({ post_id: z.string(), receiver_id: z.string() }))
@@ -21,9 +19,6 @@ export const chatRouter = createTRPCRouter({
     const sender_id = ctx.userId;
     if (!sender_id) throw new Error("Unauthorized");
 
-    // Fixing the `.or()` condition with proper string interpolation
-
-    // Check if conversation already exists in Supabase
     const { data: existingChat, error: fetchError } = await supabase
       .from("conversations")
       .select("*")
@@ -35,12 +30,11 @@ export const chatRouter = createTRPCRouter({
       .or(
         `post_id.eq.${input.post_id},sender_id.eq.${input.receiver_id},receiver_id.eq.${sender_id}`
       )
-      .maybeSingle(); // ✅ Returns `null` if no match (instead of throwing)
+      .maybeSingle();
 
     if (fetchError) throw new Error(fetchError.message);
-    if (existingChat) return existingChat; // ✅ Return existing chat if found
+    if (existingChat) return existingChat;
 
-    // Create new conversation in Supabase
     const { data: newChat, error: insertError } = await supabase
       .from("conversations")
       .insert([
@@ -59,28 +53,56 @@ export const chatRouter = createTRPCRouter({
     return newChat;
   }),
 
-  // ✅ Fetch user conversations
-  getConversations: protectedProcedure.query(async ({ ctx }) => {
+  getUserChats: protectedProcedure
+  .input(
+    z.object({
+      cursor: z.number().nullable().optional(),
+      limit: z.number().min(1).max(20).default(10),
+    })
+  )
+  .query(async ({ ctx, input }) => {
     const userId = ctx.userId;
-    if (!userId) throw new Error("Unauthorized");
+    const start = input.cursor ?? 0;
+    const end = start + input.limit - 1;
 
-    const chats = await db
-      .select()
-      .from(conversations)
-      .where(or(eq(conversations.sender_id, userId), eq(conversations.receiver_id, userId)));
+    // Step 1: Fetch conversations from Supabase
+    const { data: conversations, error } = await supabase
+      .from("conversations")
+      .select("*")
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+      .order("created_at", { ascending: false })
+      .range(start, end);
 
-    // Fetch sender & receiver details from Clerk
-    const enrichedChats = await Promise.all(
-      chats.map(async (chat) => ({
-        ...chat,
-        sender: await getUserDetails(chat.sender_id),
-        receiver: await getUserDetails(chat.receiver_id),
-      }))
-    );
+    if (error) throw new Error(error.message);
 
-    return enrichedChats;
+    // Step 2: Extract unique post_ids from conversations
+    const postIds = [...new Set(conversations.map((conv) => conv.post_id))];
+
+    // Step 3: Fetch post titles from Postgres (Drizzle)
+    let postsMap = new Array<[string, string]>();
+    if (postIds.length > 0) {
+      const posts = await ctx.db.query.posts.findMany({
+        where: (posts, { inArray }) => inArray(posts.id, postIds),
+        columns: { id: true, skill: true },
+      });
+
+      postsMap = posts.map((post) => [post.id.toString(), post.skill] as [string, string]);
+    }
+    return {
+      chats: conversations.map((conv) => ({
+        id: conv.id,
+        post_id: conv.post_id,
+        post_title: postsMap.find(([id]) => id === conv.post_id)?.[1] ?? "Unknown Post",
+        sender_id: conv.sender_id,
+        receiver_id: conv.receiver_id,
+        status: conv.status,
+        created_at: conv.created_at,
+      })),
+      nextCursor: conversations.length < input.limit ? null : start + input.limit,
+    };
   }),
-  
+
+
   sendMessage: protectedProcedure
     .input(z.object({ conversation_id: z.string(), message: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -96,7 +118,6 @@ export const chatRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // ✅ Fetch messages for a conversation
   getMessages: protectedProcedure
     .input(z.object({ conversation_id: z.string() }))
     .query(async ({ ctx, input }) => {

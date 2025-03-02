@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 const page = () => {
     return (
-        <div className='w-full h-screen flex pt-10 flex-col items-center relative'>
+        <div className='w-full h-full flex pt-10 flex-col items-center relative'>
             <CirclePlus size={50} className='text-primary mt-2'/>
             <h1 className='text-4xl font-bold text-center flex justify-center items-center w-full max-w-[18rem]'><SparklesText text='New Post'/></h1>
             <h2 className='mt-2 text-text/50'>Let people around you know if you need/offer help</h2>

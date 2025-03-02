@@ -22,7 +22,7 @@ export default function RootLayout({
       }}
     >
     <html lang="en" className="">
-      <body className="pt-[57px]">
+      <body className="pt-[57px] h-screen">
       <Header/>
       <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>

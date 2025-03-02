@@ -14,13 +14,13 @@ import {
 } from "~/components/ui/card";
 import Spinner from "./ui/spinner";
 import { Button } from "./ui/button";
-import ChatWindow from "./chat";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export function GetLocal() {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const { user } = useUser();
-  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== "undefined" && "geolocation" in navigator) {
@@ -43,7 +43,7 @@ export function GetLocal() {
 
   const { mutate: startConversation, status } = api.chat.startChat.useMutation({
     onSuccess: (data) => {
-      if (data?.id) setActiveChat(data.id.toString());
+      if (data?.id) router.push(`/chat/${data.id}`);
     },
   });
 
@@ -68,19 +68,18 @@ export function GetLocal() {
               <CardTitle>{post.skill}</CardTitle>
               <CardDescription>{post.description}</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4">
+            <CardContent className="flex items-start">
               {typeof post.distance === "number"
                 ? post.distance >= 1
                   ? `${post.distance.toFixed(1)} km` // Show 1.5 km format
                   : `${Math.round(post.distance * 1000)} m` // Show 600m format
                 : "Unknown distance"}
             </CardContent>
-            <CardFooter>
+            <CardFooter className="justify-end">
               <Button 
                 onClick={() => handleRespond(post)} 
-                disabled={status === 'pending'}
               >
-                {status === 'pending' ? "Starting chat..." : "Respond"}
+                Respond
               </Button>
             </CardFooter>
           </Card>
@@ -88,9 +87,6 @@ export function GetLocal() {
       ) : (
         <p>There are no posts in your area.</p>
       )}
-
-      {/* 🔥 Render Chat Window if a conversation is active */}
-      {activeChat && <ChatWindow conversation_id={activeChat} />}
     </div>
   );
 }
