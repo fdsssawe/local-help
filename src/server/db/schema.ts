@@ -7,7 +7,9 @@ import {
   varchar,
   numeric,
   uuid,
-  text
+  text,
+  pgEnum,
+  pgTable,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `local_help_${name}`);
@@ -41,6 +43,26 @@ export const chats = createTable("chats", {
   receiverId: text("receiver_id").notNull(),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chatStatus = pgEnum("chat_status", ["pending", "accepted", "declined"]);
+
+export const conversations = pgTable("conversations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  post_id: text("post_id").notNull(), // Links to a post
+  sender_id: text("sender_id").notNull(), // User who started the chat
+  receiver_id: text("receiver_id").notNull(), // Recipient
+  status: text("status").default("pending"), // "pending", "accepted"
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// ✅ Messages Table (Stored in Supabase, NOT in Drizzle)
+export const messages = pgTable("messages", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  conversation_id: text("conversation_id").notNull(), // Links to a conversation
+  sender_id: text("sender_id").notNull(),
+  message: text("message").notNull(),
+  created_at: timestamp("created_at").defaultNow(),
 });
 
 
