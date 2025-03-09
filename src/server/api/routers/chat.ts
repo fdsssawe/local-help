@@ -65,7 +65,7 @@ export const chatRouter = createTRPCRouter({
     const start = input.cursor ?? 0;
     const end = start + input.limit - 1;
 
-    // Step 1: Fetch conversations from Supabase
+    // Step 1: Fetch conversations from Supabase with proper OR syntax
     const { data: conversations, error } = await supabase
       .from("conversations")
       .select("*")
@@ -74,6 +74,9 @@ export const chatRouter = createTRPCRouter({
       .range(start, end);
 
     if (error) throw new Error(error.message);
+
+    // Add debug logging to see what's being fetched
+    console.log(`Found ${conversations?.length ?? 0} conversations for user ${userId}`);
 
     // Step 2: Extract unique post_ids from conversations
     const postIds = [...new Set(conversations.map((conv) => conv.post_id))];
@@ -88,8 +91,16 @@ export const chatRouter = createTRPCRouter({
 
       postsMap = posts.map((post) => [post.id.toString(), post.skill] as [string, string]);
     }
-    return {
-      chats: conversations.map((conv) => ({
+    
+    // Step 4: Get user details for all conversation partners
+    const chatPromises = conversations.map(async (conv) => {
+      // Determine who the other user in the conversation is
+      const otherUserId = conv.sender_id === userId ? conv.receiver_id : conv.sender_id;
+      
+      // Get the other user's details
+      const userDetails = await getUserDetails(otherUserId as string);
+      
+      return {
         id: conv.id,
         post_id: conv.post_id,
         post_title: postsMap.find(([id]) => id === conv.post_id)?.[1] ?? "Unknown Post",
@@ -97,11 +108,19 @@ export const chatRouter = createTRPCRouter({
         receiver_id: conv.receiver_id,
         status: conv.status,
         created_at: conv.created_at,
-      })),
+        partner_name: userDetails.name ?? "Unknown User",
+        partner_avatar: userDetails.avatar ?? "",
+        partner_id: otherUserId,
+      };
+    });
+    
+    const chats = await Promise.all(chatPromises);
+    
+    return {
+      chats,
       nextCursor: conversations.length < input.limit ? null : start + input.limit,
     };
   }),
-
 
   sendMessage: protectedProcedure
     .input(z.object({ conversation_id: z.string(), message: z.string().min(1) }))
