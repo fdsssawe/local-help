@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { InferSelectModel, sql } from "drizzle-orm";
 import {
   index,
   pgTableCreator,
@@ -10,6 +10,7 @@ import {
   text,
   pgEnum,
   pgTable,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `local_help_${name}`);
@@ -64,6 +65,19 @@ export const messages = pgTable("messages", {
   message: text("message").notNull(),
   created_at: timestamp("created_at").defaultNow(),
 });
+
+export const userAddresses = pgTable("user_addresses", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  address: varchar("address", { length: 255 }).notNull(),
+  latitude: varchar("latitude", { length: 255 }).notNull(),
+  longitude: varchar("longitude", { length: 255 }).notNull(),
+  verified: boolean("verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type UserAddress = InferSelectModel<typeof userAddresses>;
 
 
 

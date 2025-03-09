@@ -88,8 +88,8 @@ export default function Header() {
                                     <ListItem href="/local" title="Local">
                                         List of the posts in your area.
                                     </ListItem>
-                                    <ListItem href="/" title="Installation">
-                                        How to install dependencies and structure your app.
+                                    <ListItem href="/post" title="Post">
+                                        Add a new post.
                                     </ListItem>
                                     <ListItem href="/docs/primitives/typography" title="Typography">
                                         Styles for headings, paragraphs, lists...etc
