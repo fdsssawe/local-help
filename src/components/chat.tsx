@@ -6,6 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import { supabase } from "~/lib/supabase";
 import { cn } from "~/lib/utils";
 import Spinner from "./ui/spinner";
+import Image from "next/image";
 
 interface Message {
   id: string;
@@ -14,7 +15,19 @@ interface Message {
   created_at: string;
 }
 
-export default function ChatComponent({ conversation_id }: { conversation_id: string }) {
+interface ChatComponentProps {
+  conversation_id: string;
+  partner_name?: string;
+  partner_avatar?: string;
+  post_title?: string;
+}
+
+export default function ChatComponent({ 
+  conversation_id,
+  partner_name,
+  partner_avatar,
+  post_title 
+}: ChatComponentProps) {
   const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -27,7 +40,7 @@ export default function ChatComponent({ conversation_id }: { conversation_id: st
     { 
       refetchOnWindowFocus: false,
       // This ensures we'll refetch when conversation_id changes
-      queryKey: ['chat.getMessages', { conversation_id }]
+      enabled: !!conversation_id
     }
   );
 
@@ -80,7 +93,7 @@ export default function ChatComponent({ conversation_id }: { conversation_id: st
     // Optimistically add the message to the UI
     const optimisticMessage: Message = {
       id: `temp-${Date.now()}`,
-      sender_id: user?.id || '',
+      sender_id: user?.id ?? '',
       message: newMessage,
       created_at: new Date().toISOString(),
     };
@@ -99,7 +112,27 @@ export default function ChatComponent({ conversation_id }: { conversation_id: st
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="border-b border-gray-200 p-4 bg-primary/10">
-        <h2 className="text-lg font-semibold">Chat</h2>
+        <div className="flex items-center">
+          <div className="flex-shrink-0 mr-3">
+            {partner_avatar ? (
+              <div className="relative h-7 w-7 rounded-full overflow-hidden">
+                <Image
+                  src={partner_avatar}
+                  alt={partner_name ?? "User"}
+                  width={28}
+                  height={28}
+                />
+              </div>
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500">{partner_name?.charAt(0) ?? "?"}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-lg font-semibold">{partner_name ?? "Chat"}</h2>
+          </div>
+        </div>
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 flex gap-2 flex-col bg-background">
