@@ -122,7 +122,7 @@ export function CreatePost() {
         <p>You have no posts yet.</p>
       )} */}
       <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
         <FormField
           control={form.control}
           name="skill"
@@ -149,7 +149,7 @@ export function CreatePost() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">{createPost.isPending ? "Submitting..." : "Submit"}</Button>
+        <Button type="submit" className="w-full mt-8">{createPost.isPending ? "Submitting..." : "Submit"}</Button>
       </form>
     </Form>
     </div>
