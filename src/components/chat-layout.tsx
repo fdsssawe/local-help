@@ -18,17 +18,19 @@ export default function ChatLayout() {
   const [isChangingChat, setIsChangingChat] = useState(false);
 
   useEffect(() => {
-    const id = searchParams?.get("id");
-    if (id !== activeConversationId) {
-      if (id) {
-        setIsChangingChat(true);
-        setTimeout(() => {
-          setActiveConversationId(id);
-          setIsChangingChat(false);
-        }, 10);
-      } else {
-        setActiveConversationId(null);
-      }
+    // Handle all possible parameter names (id, active, conversation)
+    const id = searchParams?.get("id") || 
+               searchParams?.get("active") || 
+               searchParams?.get("conversation");
+               
+    if (id && id !== activeConversationId) {
+      setIsChangingChat(true);
+      setTimeout(() => {
+        setActiveConversationId(id);
+        setIsChangingChat(false);
+      }, 10);
+    } else if (!id && activeConversationId) {
+      setActiveConversationId(null);
     }
   }, [searchParams, activeConversationId]);
 
@@ -61,6 +63,20 @@ export default function ChatLayout() {
     if (chatId === activeConversationId) return; // Skip if already selected
     setIsChangingChat(true);
     router.push(`/chats?id=${chatId}`, { scroll: false });
+  };
+
+  // When selecting a conversation, update URL
+  const handleConversationSelect = (conversation: any) => {
+    setActiveChat(conversation);
+    
+    // Update URL without refreshing the page
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(
+        {}, 
+        '', 
+        `/chats?active=${conversation.id}`
+      );
+    }
   };
 
   // Find the active chat's details

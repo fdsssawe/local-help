@@ -1,8 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
-import { db } from "~/server/db";
-import { conversations } from "~/server/db/schema";
-import { eq, or, and } from "drizzle-orm";
 import { clerkClient } from "@clerk/nextjs/server";
 import { supabase } from "~/lib/supabase";
 
@@ -149,6 +146,42 @@ export const chatRouter = createTRPCRouter({
       if (error) throw new Error(error.message);
 
       return data;
+    }),
+
+  // Fix the checkConversationExists procedure to use Supabase consistently
+  checkConversationExists: protectedProcedure
+    .input(z.object({
+      post_id: z.string(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.userId;
+      if (!userId) throw new Error("Unauthorized");
+      
+      try {
+        // Use Supabase consistently with the rest of the chat functions
+        const { data: conversation, error } = await supabase
+          .from("conversations")
+          .select("id")
+          .eq("post_id", input.post_id)
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+          .maybeSingle();
+        
+        if (error) {
+          console.error("Error checking conversation:", error);
+          throw new Error(error.message);
+        }
+        
+        return {
+          exists: !!conversation,
+          conversation_id: conversation?.id || null
+        };
+      } catch (error) {
+        console.error("Error checking for existing conversation:", error);
+        return {
+          exists: false,
+          conversation_id: null
+        };
+      }
     }),
 });
 

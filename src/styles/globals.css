@@ -1,9 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  padding-top: 57px !important;
+}
+
+/* Ensure proper z-index stacking */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
+/* Ensure select dropdown appears above other elements */
+.radix-select-content {
+  z-index: 9999 !important; 
+}
 
 @layer base {
   :root {

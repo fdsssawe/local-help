@@ -124,7 +124,7 @@ export default function ChatComponent({
                 />
               </div>
             ) : (
-              <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+              <div className="h-7 w-7 rounded-full bg-gray-200 flex items-center justify-center">
                 <span className="text-gray-500">{partner_name?.charAt(0) ?? "?"}</span>
               </div>
             )}

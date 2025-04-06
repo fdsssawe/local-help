@@ -17,21 +17,6 @@ import {
 } from "~/components/ui/navigation"
 import { Menu, X } from 'lucide-react';
 
-const components: { title: string; href: string; description: string }[] = [
-    {
-        title: "My Chats",
-        href: "/chats",
-        description:
-            "Chats realted to the posts you have made.",
-    },
-    {
-        title: "Recent",
-        href: "/chat",
-        description:
-            "Enter last chat you was texting in.",
-    },
-]
-
 const ListItem = React.forwardRef<
     React.ElementRef<"a">,
     React.ComponentPropsWithoutRef<"a">
@@ -62,7 +47,7 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
-        <header className="text-text body-font font-medium font-primary absolute top-0 w-full z-50">
+        <header className="text-text body-font font-medium font-primary fixed top-0 w-full z-50 bg-background shadow-sm">
             <div className="container mx-auto flex flex-wrap p-5 py-2 flex-row items-center">
                 <a className="flex font-bold items-center text-gray-900 mb-0 flex-1" href='/'>
                     <Image src="https://utfs.io/f/1577fa92-718f-43f7-a234-8aac96ab384c-5nx4sw.png" alt="logo" width={40} height={40} />
@@ -115,20 +100,11 @@ export default function Header() {
                                 </NavigationMenuContent>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavigationMenuTrigger>Chats</NavigationMenuTrigger>
-                                <NavigationMenuContent>
-                                    <ul className="grid w-[300px] gap-3 p-4 md:w-[400px] md:grid-cols-2 lg:w-[500px] ">
-                                        {components.map((component) => (
-                                            <ListItem
-                                                key={component.title}
-                                                title={component.title}
-                                                href={component.href}
-                                            >
-                                                {component.description}
-                                            </ListItem>
-                                        ))}
-                                    </ul>
-                                </NavigationMenuContent>
+                                <Link href="/chats" legacyBehavior passHref>
+                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                        Chats
+                                    </NavigationMenuLink>
+                                </Link>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
                                 <Link href="/about" legacyBehavior passHref>
