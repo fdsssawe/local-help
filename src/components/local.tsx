@@ -286,42 +286,57 @@ export function GetLocal({ searchQuery = '', distanceFilter, sortOption = 'recen
             const hasConversation = postId && conversationStatus[postId]?.exists;
             
             return (
-            <Card key={post.id} className="h-full flex flex-col">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle>{post.skill}</CardTitle>
-                  <Badge variant="outline" className="bg-primary/5 text-primary">
-                    {formatDistance(post.distance)}
-                  </Badge>
+              <Card key={post.id} className="h-full flex flex-col group hover:shadow-md transition-shadow">
+                <div className="cursor-pointer" onClick={() => router.push(`/post/${post.id}`)}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle>{post.skill}</CardTitle>
+                      <Badge variant="outline" className="bg-primary/5 text-primary">
+                        {formatDistance(post.distance)}
+                      </Badge>
+                    </div>
+                    <CardDescription className="line-clamp-2">{post.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock size={14} />
+                      <span>
+                        {formatPostDate(post)}
+                      </span>
+                    </div>
+                  </CardContent>
                 </div>
-                <CardDescription className="line-clamp-2">{post.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock size={14} />
-                  <span>
-                    {formatPostDate(post)}
-                  </span>
-                </div>
-              </CardContent>
-              <CardFooter className="justify-end border-t pt-4">
-                <Button 
-                  onClick={() => handleRespond(post)} 
-                  className="w-full sm:w-auto"
-                  variant={hasConversation ? "outline" : "default"}
-                >
-                  {hasConversation ? (
-                    <>
-                      <MessageCircle size={16} className="mr-2" />
-                      View Conversation
-                    </>
-                  ) : (
-                    "Contact Provider"
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          )})}
+                <CardFooter className="justify-end border-t pt-4 flex gap-2">
+                  <Button 
+                    variant="secondary"
+                    onClick={() => router.push(`/post/${post.id}`)}
+                    className="w-full sm:w-auto"
+                  >
+                    View Details
+                  </Button>
+                  
+                  {/* Keep contact button for convenience but make it secondary */}
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent navigation to post details
+                      handleRespond(post);
+                    }} 
+                    className="w-full sm:w-auto"
+                    variant={hasConversation ? "outline" : "default"}
+                  >
+                    {hasConversation ? (
+                      <>
+                        <MessageCircle size={16} className="mr-2" />
+                        View Chat
+                      </>
+                    ) : (
+                      "Contact"
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-secondary/10 rounded-lg">

@@ -1,5 +1,6 @@
 'use client'
 
+import { SignUpButton } from "@clerk/nextjs";
 import Lottie from "lottie-react";
 import Link from "next/link";
 import groovyWalkAnimation from '~/../assets/about.json';
@@ -98,11 +99,11 @@ export default function AboutPage() {
               Whether you&apos;re a freelancer, a hobbyist, or someone who needs a hand, Local Help is here to connect you.
             </p>
             
-            <Link href='/signup'>
               <button className="bg-primary hover:bg-primary/90 px-8 py-4 rounded-md text-lg font-medium transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-200">
+              <SignUpButton>
                 👉 Sign Up Now
+                </SignUpButton>
               </button>
-            </Link>
           </section>
         </div>
       </div>

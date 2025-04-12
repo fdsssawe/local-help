@@ -99,13 +99,15 @@ export default function Header() {
                                     </ul>
                                 </NavigationMenuContent>
                             </NavigationMenuItem>
-                            <NavigationMenuItem>
-                                <Link href="/chats" legacyBehavior passHref>
-                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                        Chats
-                                    </NavigationMenuLink>
-                                </Link>
-                            </NavigationMenuItem>
+                            <SignedIn>
+                                <NavigationMenuItem>
+                                    <Link href="/chats" legacyBehavior passHref>
+                                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                            Chats
+                                        </NavigationMenuLink>
+                                    </Link>
+                                </NavigationMenuItem>
+                            </SignedIn>
                             <NavigationMenuItem>
                                 <Link href="/about" legacyBehavior passHref>
                                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>

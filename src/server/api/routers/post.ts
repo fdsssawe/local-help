@@ -3,6 +3,7 @@ import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/
 import { posts, userAddresses } from "~/server/db/schema";
 import { sql } from "@vercel/postgres";
 import { eq } from "drizzle-orm";
+import { clerkClient } from "@clerk/nextjs/server";
 
 // Define the Earth's radius in kilometers
 const EARTH_RADIUS_KM = 6371;
@@ -112,6 +113,75 @@ export const postRouter = createTRPCRouter({
       } catch (error) {
         console.error("Error fetching nearby posts:", error);
         return { rows: [] };
+      }
+    }),
+
+  // New endpoint to get a single post by ID
+  getById: publicProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const post = await ctx.db.query.posts.findFirst({
+          where: eq(posts.id, parseInt(input.postId)),
+        });
+        
+        if (!post) {
+          throw new Error("Post not found");
+        }
+
+        // Get user info for the post creator
+        let creator = null;
+        if (post.userId) {
+          try {
+            creator = await clerkClient.users.getUser(post.userId);
+          } catch (error) {
+            console.error("Error fetching user:", error);
+          }
+        }
+        
+        // Calculate distance if current user's location is available
+        let distance = undefined;
+        const currentUserId = ctx.auth?.userId ?? null;
+        
+        if (currentUserId && post.latitude && post.longitude) {
+          // If user is logged in, try to calculate distance
+          const userAddress = await ctx.db.query.userAddresses.findFirst({
+            where: eq(userAddresses.userId, currentUserId),
+          });
+          
+          if (userAddress?.latitude && userAddress?.longitude) {
+            // Use Haversine formula to calculate distance
+            const userLat = parseFloat(userAddress.latitude);
+            const userLon = parseFloat(userAddress.longitude);
+            const postLat = parseFloat(post.latitude);
+            const postLon = parseFloat(post.longitude);
+            
+            // Calculate distance using same formula as getNearbyPosts
+            const result = await sql`
+              SELECT (
+                ${6371} * acos(
+                  LEAST(1.0, cos(radians(${userLat})) * cos(radians(${postLat})) * 
+                  cos(radians(${postLon}) - radians(${userLon})) + 
+                  sin(radians(${userLat})) * sin(radians(${postLat})))
+                )
+              ) AS distance;
+            `;
+            
+            if (result.rows.length > 0) {
+              distance = parseFloat(result.rows[0].distance);
+            }
+          }
+        }
+        
+        return {
+          ...post,
+          distance,
+          creatorName: creator ? `${creator.firstName || ''} ${creator.lastName || ''}`.trim() : "Anonymous User",
+          creatorImage: creator?.imageUrl || null,
+        };
+      } catch (error) {
+        console.error("Error fetching post:", error);
+        throw new Error("Failed to fetch post");
       }
     }),
 });
