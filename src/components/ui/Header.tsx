@@ -15,7 +15,7 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from "~/components/ui/navigation"
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Search, MapPin, AlertCircle } from 'lucide-react';
 
 const ListItem = React.forwardRef<
     React.ElementRef<"a">,
@@ -93,9 +93,6 @@ export default function Header() {
                                         <ListItem href="/post" title="Post">
                                             Add a new post.
                                         </ListItem>
-                                        <ListItem href="/docs/primitives/typography" title="Typography">
-                                            Styles for headings, paragraphs, lists...etc
-                                        </ListItem>
                                     </ul>
                                 </NavigationMenuContent>
                             </NavigationMenuItem>
@@ -112,6 +109,13 @@ export default function Header() {
                                 <Link href="/about" legacyBehavior passHref>
                                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                                         About
+                                    </NavigationMenuLink>
+                                </Link>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <Link href="/lost-found" legacyBehavior passHref>
+                                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                                        Lost & Found
                                     </NavigationMenuLink>
                                 </Link>
                             </NavigationMenuItem>
@@ -158,6 +162,11 @@ export default function Header() {
                             <li>
                                 <Link href="/about" className="block py-2 hover:text-primary">
                                     About
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/lost-found" className="block py-2 hover:text-primary">
+                                    Lost & Found
                                 </Link>
                             </li>
                         </ul>

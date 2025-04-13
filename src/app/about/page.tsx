@@ -4,6 +4,7 @@ import { SignUpButton } from "@clerk/nextjs";
 import Lottie from "lottie-react";
 import Link from "next/link";
 import groovyWalkAnimation from '~/../assets/about.json';
+import { Button } from "~/components/ui/button";
 
 export default function AboutPage() {
   return (
@@ -99,11 +100,11 @@ export default function AboutPage() {
               Whether you&apos;re a freelancer, a hobbyist, or someone who needs a hand, Local Help is here to connect you.
             </p>
             
-              <button className="bg-primary hover:bg-primary/90 px-8 py-4 rounded-md text-lg font-medium transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-200">
+              <Button asChild>
               <SignUpButton>
                 👉 Sign Up Now
                 </SignUpButton>
-              </button>
+              </Button>
           </section>
         </div>
       </div>

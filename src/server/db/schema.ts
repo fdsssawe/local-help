@@ -77,7 +77,27 @@ export const userAddresses = pgTable("user_addresses", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const lostFoundItems = pgTable("lost_found_items", {
+  id: serial("id").primaryKey(),
+  type: varchar("type", { length: 10 }).notNull(), // "lost" or "found"
+  title: varchar("title", { length: 100 }).notNull(),
+  description: text("description").notNull(),
+  category: varchar("category", { length: 50 }), // e.g., "pet", "personal item", "document"
+  date: timestamp("date").defaultNow().notNull(),
+  location: varchar("location", { length: 255 }).notNull(), // Named location
+  latitude: varchar("latitude", { length: 255 }).notNull(),
+  longitude: varchar("longitude", { length: 255 }).notNull(),
+  imageUrl: varchar("image_url", { length: 1024 }),
+  contactMethod: varchar("contact_method", { length: 50 }).notNull(), // "platform" or "custom"
+  contactInfo: varchar("contact_info", { length: 255 }), // Only used if contactMethod is "custom"
+  status: varchar("status", { length: 20 }).default("active").notNull(), // "active", "resolved", "expired"
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export type UserAddress = InferSelectModel<typeof userAddresses>;
+export type LostFoundItem = InferSelectModel<typeof lostFoundItems>;
 
 
 
