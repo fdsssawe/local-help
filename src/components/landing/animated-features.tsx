@@ -53,14 +53,13 @@ function FeatureCard({ icon, title, description, delay, highlightColor }: Featur
       transition={{ duration: 0.4, delay }}
       className="group relative overflow-hidden rounded-lg border bg-background p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:shadow-primary/20"
     >
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-muted/50">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-white border border-muted/15">
         {icon}
       </div>
       
       <h3 className="mb-2 text-lg font-medium">{title}</h3>
       <p className="text-muted-foreground">{description}</p>
       
-      {/* Animated highlight effect on hover */}
       <div
         className="absolute inset-0 -z-10 transform-gpu animate-pulse rounded-xl opacity-0 blur-3xl transition-all duration-300 group-hover:opacity-100"
         style={{ 

@@ -62,6 +62,7 @@ export default function ItemPage() {
   const [isSending, setIsSending] = useState(false);
   const [showLoginAlert, setShowLoginAlert] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [isContactLoading, setIsContactLoading] = useState(false);
 
   // Get the item ID from the URL params
   const itemId = typeof params.id === 'string' ? params.id : '';
@@ -88,6 +89,19 @@ export default function ItemPage() {
         variant: "destructive",
       });
     }
+  });
+
+  // Add chat/conversation hooks
+  const checkConversation = api.chat.checkConversationExists.useQuery(
+    { post_id: itemId },
+    { enabled: !!itemId && !!user }
+  );
+  const { mutate: startConversation } = api.chat.startChat.useMutation({
+    onSuccess: (data) => {
+      setIsContactLoading(false);
+      if (data?.id) router.push(`/chats?id=${data.id}`);
+    },
+    onError: () => setIsContactLoading(false),
   });
 
   // Format date function
@@ -131,7 +145,7 @@ export default function ItemPage() {
   };
 
   // Handle contact button click
-  const handleContactClick = () => {
+  const handleContactClick = async () => {
     if (!isLoaded || !user) {
       setShowLoginAlert(true);
       return;
@@ -145,7 +159,26 @@ export default function ItemPage() {
       return;
     }
 
-    setContactDialogOpen(true);
+    // If custom contact method, open dialog as before
+    if (item.contactMethod === "custom" && item.contactInfo) {
+      setContactDialogOpen(true);
+      return;
+    }
+
+    // Otherwise, handle chat
+    setIsContactLoading(true);
+
+    // Check for existing conversation
+    if (checkConversation.data?.exists && checkConversation.data?.conversation_id) {
+      router.push(`/chats?id=${checkConversation.data.conversation_id}`);
+      setIsContactLoading(false);
+    } else {
+      // Start a new conversation
+      startConversation({
+        post_id: itemId,
+        receiver_id: item.userId || "",
+      });
+    }
   };
 
   // Handle message submission
@@ -337,9 +370,9 @@ export default function ItemPage() {
               <Button 
                 className="flex items-center gap-2"
                 onClick={handleContactClick}
-                disabled={item.status !== "active"}
+                disabled={item.status !== "active" || isContactLoading}
               >
-                <MessageCircle size={16} />
+                {isContactLoading ? <Spinner size="4" className="mr-2" /> : <MessageCircle size={16} />}
                 Contact Poster
               </Button>
             )}
@@ -373,17 +406,7 @@ export default function ItemPage() {
                   {item.contactInfo}
                 </p>
               </div>
-            ) : (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Your message</label>
-                <Textarea 
-                  placeholder={`Hello, I'm messaging about your ${item.type === 'lost' ? 'lost' : 'found'} ${item.title}...`}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="min-h-[120px]"
-                />
-              </div>
-            )}
+            ) : null}
           </div>
           
           <DialogFooter>
@@ -391,16 +414,8 @@ export default function ItemPage() {
               variant="outline"
               onClick={() => setContactDialogOpen(false)}
             >
-              Cancel
+              Close
             </Button>
-            {item.contactMethod !== "custom" && (
-              <Button 
-                onClick={handleSendMessage}
-                disabled={isSending || !message.trim()}
-              >
-                {isSending ? "Sending..." : "Send Message"}
-              </Button>
-            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
