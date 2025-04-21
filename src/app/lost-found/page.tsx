@@ -338,7 +338,7 @@ const LostFoundPage = () => {
             </div>
 
             {/* Main content section */}
-            <div className="max-w-6xl w-full mx-auto pb-16 px-4">
+            <div className="max-w-6xl w-full mx-auto pb-16">
                 <div className="w-full">
                     {user && (
                         <div className="flex items-center justify-between px-4 py-4 bg-secondary/10 rounded-lg mb-5">

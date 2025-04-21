@@ -112,6 +112,7 @@ export default function Header() {
                                     </NavigationMenuLink>
                                 </Link>
                             </NavigationMenuItem>
+                            <SignedIn>
                             <NavigationMenuItem>
                                 <Link href="/lost-found" legacyBehavior passHref>
                                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -119,6 +120,7 @@ export default function Header() {
                                     </NavigationMenuLink>
                                 </Link>
                             </NavigationMenuItem>
+                            </SignedIn>
                         </NavigationMenuList>
                     </NavigationMenu>
                 </div>
@@ -144,6 +146,7 @@ export default function Header() {
                                     Home
                                 </Link>
                             </li>
+                            <SignedIn>
                             <li>
                                 <Link href="/local" className="block py-2 hover:text-primary">
                                     Local Posts
@@ -159,16 +162,19 @@ export default function Header() {
                                     My Chats
                                 </Link>
                             </li>
+                            </SignedIn>
                             <li>
                                 <Link href="/about" className="block py-2 hover:text-primary">
                                     About
                                 </Link>
                             </li>
+                            <SignedIn>
                             <li>
                                 <Link href="/lost-found" className="block py-2 hover:text-primary">
                                     Lost & Found
                                 </Link>
                             </li>
+                            </SignedIn>
                         </ul>
                     </div>
                 </div>

@@ -7,7 +7,7 @@ const config = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
 	],
-  darkMode: "media",
+  darkMode: ["media", 'class'],
   prefix: "",
   theme: {
     container: {
