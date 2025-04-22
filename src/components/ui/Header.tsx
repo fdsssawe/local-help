@@ -93,6 +93,9 @@ export default function Header() {
                                         <ListItem href="/post" title="Post">
                                             Add a new post.
                                         </ListItem>
+                                        <ListItem href="/my-posts" title="My Posts">
+                                            View and manage your posts.
+                                        </ListItem>
                                     </ul>
                                 </NavigationMenuContent>
                             </NavigationMenuItem>
@@ -125,9 +128,9 @@ export default function Header() {
                     </NavigationMenu>
                 </div>
 
-                <div className='relative overflow-hidden h-full flex-1 flex justify-end'>
+                <div className='relative overflow-hidden h-9 py-1 pr-1 flex-1 flex justify-end'>
                     <SignedOut>
-                        <SignInButton />
+                        <SignInButton forceRedirectUrl={'/'} signUpForceRedirectUrl={'/'}/>
                     </SignedOut>
                     <SignedIn>
                         <UserButton />
@@ -155,6 +158,11 @@ export default function Header() {
                             <li>
                                 <Link href="/post" className="block py-2 hover:text-primary">
                                     New Post
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/my-posts" className="block py-2 hover:text-primary">
+                                    My Posts
                                 </Link>
                             </li>
                             <li>

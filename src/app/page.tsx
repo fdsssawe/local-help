@@ -231,7 +231,7 @@ export default function HomePage() {
       {/* How It Works Section */}
       <section 
         ref={howItWorksRef} 
-        className="w-full px-4 py-20 md:py-32 bg-muted/30"
+        className="w-full px-4 py-20 md:py-32 bg-secondary/50"
       >
         <div className="container mx-auto">
           <motion.div 

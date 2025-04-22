@@ -314,10 +314,11 @@ export default function AddressPage() {
                     placeholder="Enter your full address"
                   />
                 </div>
-                <div className="pt-7">
+                <div className="pt-6">
                   <Button 
                     type="button" 
                     variant="outline" 
+                    className="h-full"
                     onClick={searchAddress} 
                     disabled={isGeocodingLoading || !address}
                   >
@@ -378,8 +379,8 @@ export default function AddressPage() {
                   <Label>Current Location</Label>
                   <div className="text-sm text-muted-foreground mt-1">
                     {selectedCoordinates ? (
-                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded">
-                        <p className="font-medium text-green-800 dark:text-green-300">Using searched coordinates:</p>
+                      <div className="p-2 bg-secondary text-text rounded">
+                        <p className="font-medium text-text">Using searched coordinates:</p>
                         <p>Lat: {Number(selectedCoordinates.latitude).toFixed(6)}, Long: {Number(selectedCoordinates.longitude).toFixed(6)}</p>
                       </div>
                     ) : location ? (

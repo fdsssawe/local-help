@@ -18,17 +18,35 @@ export const postRouter = createTRPCRouter({
         latitude: z.string(),
         longitude: z.string(),
         userId: z.string(),
+        useRegisteredAddress: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(posts).values({
-        latitude: input.latitude,
-        longitude: input.longitude,
+      let latitude = input.latitude;
+      let longitude = input.longitude;
+      
+      // Use registered address if specified
+      if (input.useRegisteredAddress && ctx.auth?.userId) {
+        const registeredAddress = await ctx.db.query.userAddresses.findFirst({
+          where: eq(userAddresses.userId, ctx.auth.userId),
+        });
+
+        if (registeredAddress) {
+          latitude = registeredAddress.latitude;
+          longitude = registeredAddress.longitude;
+        }
+      }
+      
+      const result = await ctx.db.insert(posts).values({
+        latitude,
+        longitude,
         skill: input.skill,
         description: input.description,
         userId: input.userId,
         createdAt: new Date(),
-      });
+      }).returning({ id: posts.id });
+      
+      return result[0]; // Return the created post data including its ID
     }),
 
   // Fetch the latest post
@@ -54,7 +72,7 @@ export const postRouter = createTRPCRouter({
       // Get registered address if useRegisteredAddress is true and user is logged in
       let lat = parseFloat(input.latitude);
       let lon = parseFloat(input.longitude);
-      const radiusInKm = input.maxDistance || 1; // Default to 1 kilometer radius if not specified
+      const radiusInKm = input.maxDistance ?? 1; // Default to 1 kilometer radius if not specified
       const currentUserId = ctx.auth?.userId ?? null;
 
       try {
@@ -70,7 +88,7 @@ export const postRouter = createTRPCRouter({
         }
 
         // Handle case where coordinates might not be valid numbers
-        if (isNaN(lat) || isNaN(lon)) {
+        if (isNaN(lat) ?? isNaN(lon)) {
           throw new Error("Invalid coordinates");
         }
 
@@ -176,12 +194,66 @@ export const postRouter = createTRPCRouter({
         return {
           ...post,
           distance,
-          creatorName: creator ? `${creator.firstName || ''} ${creator.lastName || ''}`.trim() : "Anonymous User",
-          creatorImage: creator?.imageUrl || null,
+          creatorName: creator ? `${creator.firstName ?? ''} ${creator.lastName ?? ''}`.trim() : "Anonymous User",
+          creatorImage: creator?.imageUrl ?? null,
         };
       } catch (error) {
         console.error("Error fetching post:", error);
         throw new Error("Failed to fetch post");
       }
+    }),
+
+  // Get user's posts
+  getUserPosts: protectedProcedure
+    .input(
+      z.object({
+        sortBy: z.enum(["recent", "oldest"]).optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.auth?.userId;
+      if (!userId) {
+        throw new Error("You must be logged in to view your posts");
+      }
+
+      const userPosts = await ctx.db.query.posts.findMany({
+        where: eq(posts.userId, userId),
+        orderBy: input.sortBy === "oldest" 
+          ? (posts, { asc }) => [asc(posts.createdAt)]
+          : (posts, { desc }) => [desc(posts.createdAt)],
+      });
+
+      return userPosts;
+    }),
+
+  // Delete a post
+  deletePost: protectedProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.auth?.userId;
+      if (!userId) {
+        throw new Error("You must be logged in to delete posts");
+      }
+
+      // Check if the post belongs to the user
+      const post = await ctx.db.query.posts.findFirst({
+        where: (posts, { and, eq }) => 
+          and(eq(posts.id, input.postId), eq(posts.userId, userId)),
+      });
+
+      if (!post) {
+        throw new Error("Post not found or you don't have permission to delete it");
+      }
+
+      // Delete the post
+      await ctx.db
+        .delete(posts)
+        .where(eq(posts.id, input.postId));
+
+      return { success: true };
     }),
 });
