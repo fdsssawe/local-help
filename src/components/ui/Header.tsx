@@ -124,6 +124,29 @@ export default function Header() {
                                 </Link>
                             </NavigationMenuItem>
                             </SignedIn>
+                            
+                            <SignedIn>
+                            <NavigationMenuItem>
+                                <NavigationMenuTrigger>Account</NavigationMenuTrigger>
+                                <NavigationMenuContent>
+                                    <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[1fr_1fr]">
+                                        <li className="row-span-3">
+                                            <NavigationMenuLink asChild>
+                                                <a
+                                                    className="flex h-full w-full select-none flex-col justify-center items-center rounded-md bg-gradient-to-b from-primary/40 to-secondary p-6 no-underline outline-none focus:shadow-md"
+                                                    href="/"
+                                                >
+                                                    <Image src="https://utfs.io/f/1577fa92-718f-43f7-a234-8aac96ab384c-5nx4sw.png" alt="logo" width={36} height={36} />
+                                                </a>
+                                            </NavigationMenuLink>
+                                        </li>
+                                        <ListItem href="/account/address" title="My Address">
+                                            Set or verify your home address
+                                        </ListItem>
+                                    </ul>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+                            </SignedIn>
                         </NavigationMenuList>
                     </NavigationMenu>
                 </div>
@@ -170,19 +193,27 @@ export default function Header() {
                                     My Chats
                                 </Link>
                             </li>
-                            </SignedIn>
                             <li>
-                                <Link href="/about" className="block py-2 hover:text-primary">
-                                    About
+                                <Link href="/account" className="block py-2 hover:text-primary">
+                                    My Profile
                                 </Link>
                             </li>
-                            <SignedIn>
+                            <li>
+                                <Link href="/account/address" className="block py-2 hover:text-primary flex items-center">
+                                    <MapPin className="h-4 w-4 mr-1" /> My Address
+                                </Link>
+                            </li>
                             <li>
                                 <Link href="/lost-found" className="block py-2 hover:text-primary">
                                     Lost & Found
                                 </Link>
                             </li>
                             </SignedIn>
+                            <li>
+                                <Link href="/about" className="block py-2 hover:text-primary">
+                                    About
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                 </div>

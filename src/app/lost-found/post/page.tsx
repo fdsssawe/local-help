@@ -48,9 +48,10 @@ import {
 } from "~/components/ui/alert-dialog";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { Label } from "~/components/ui/label";
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin, Search } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { toast } from "~/components/hooks/use-toast";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "~/components/ui/drawer";
 
 // Form schema validation
 const formSchema = z.object({
@@ -86,6 +87,22 @@ export default function LostFoundPostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLoginAlert, setShowLoginAlert] = useState(false);
   const [customCategory, setCustomCategory] = useState('');
+  
+  // New state variables for location search
+  const [isGeocodingLoading, setIsGeocodingLoading] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedCoordinates, setSelectedCoordinates] = useState<{ latitude: string; longitude: string } | null>(null);
+  
+  // Geocoding result interface
+  interface GeocodingResult {
+    display_name: string;
+    lat: string;
+    lon: string;
+    [key: string]: unknown;
+  }
+  
+  const [geocodeResults, setGeocodeResults] = useState<GeocodingResult[]>([]);
+  const [isGettingAddress, setIsGettingAddress] = useState(false);
 
   // Initialize form
   const form = useForm<FormValues>({
@@ -108,15 +125,167 @@ export default function LostFoundPostPage() {
     }
   }, [isLoaded, user]);
 
-  // Get current location
+  // Get current location and convert to address automatically when the page loads
   useEffect(() => {
-    if (typeof window !== "undefined" && 'geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(({ coords }) => {
-        const { latitude, longitude } = coords;
-        setLocation({ latitude, longitude });
+    let isMounted = true;
+    
+    const getLocationAndAddress = async () => {
+      if (typeof window !== "undefined" && 'geolocation' in navigator) {
+        try {
+          navigator.geolocation.getCurrentPosition(
+            async ({ coords }) => {
+              if (!isMounted) return;
+              const { latitude, longitude } = coords;
+              setLocation({ latitude, longitude });
+              
+              // Try to get the address from coordinates
+              try {
+                setIsGettingAddress(true);
+                const response = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                );
+                
+                if (!isMounted) return;
+                
+                const data = await response.json();
+                if (data?.display_name) {
+                  console.log('Setting initial address from browser location:', data.display_name);
+                  form.setValue('location', data.display_name);
+                  setSelectedCoordinates({
+                    latitude: latitude.toString(),
+                    longitude: longitude.toString()
+                  });
+                }
+              } catch (error) {
+                console.error("Error reverse geocoding:", error);
+              } finally {
+                if (isMounted) {
+                  setIsGettingAddress(false);
+                }
+              }
+            },
+            (error) => {
+              if (!isMounted) return;
+              console.error("Error getting location:", error);
+              setLocation(null);
+            },
+            { enableHighAccuracy: true }
+          );
+        } catch (error) {
+          console.error("Error accessing geolocation:", error);
+        }
+      }
+    };
+    
+    getLocationAndAddress();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [form]);
+
+  // Function to manually update address from coordinates
+  const updateAddressFromCoordinates = async (lat: number, lon: number) => {
+    setIsGettingAddress(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+      );
+      
+      const data = await response.json();
+      if (data?.display_name) {
+        console.log('Manually setting address to:', data.display_name);
+        form.setValue('location', data.display_name);
+        setSelectedCoordinates({
+          latitude: lat.toString(),
+          longitude: lon.toString()
+        });
+      }
+    } catch (error) {
+      console.error("Error reverse geocoding:", error);
+      toast({
+        title: "Error getting address",
+        description: "Could not retrieve address from your location.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGettingAddress(false);
+    }
+  };
+
+  // Search for address and get coordinates
+  const searchAddress = async () => {
+    const locationValue = form.getValues('location');
+    if (!locationValue) return;
+
+    setIsGeocodingLoading(true);
+    try {
+      // Using Nominatim OpenStreetMap API (free, but has usage limits)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationValue)}`
+      );
+      
+      const data = await response.json();
+      setGeocodeResults(Array.isArray(data) ? data : []);
+      setDrawerOpen(true);
+      
+      if (data.length === 0) {
+        toast({
+          title: "Address not found",
+          description: "We couldn't find coordinates for this address. Try entering a more specific address.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+      toast({
+        title: "Geocoding failed",
+        description: "There was a problem finding your address coordinates. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeocodingLoading(false);
+    }
+  };
+
+  // Select an address from geocoding results
+  const selectAddress = (result: GeocodingResult) => {
+    form.setValue('location', result.display_name);
+    const lat = String(result.lat);
+    const lon = String(result.lon);
+    
+    // Store the selected coordinates
+    setSelectedCoordinates({
+      latitude: lat,
+      longitude: lon
+    });
+    
+    // If we have browser location, update it with selected coordinates
+    if (location) {
+      setLocation({
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lon)
       });
     }
-  }, []);
+    
+    // Close the drawer
+    setDrawerOpen(false);
+    
+    // Show confirmation to the user
+    toast({
+      title: "Address selected",
+      description: "The location has been updated.",
+    });
+  };
+
+  // Handle location input change - clear selected coordinates when manually editing
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    form.setValue('location', e.target.value);
+    // Clear selected coordinates when user edits the location manually
+    if (selectedCoordinates) {
+      setSelectedCoordinates(null);
+    }
+  };
 
   // Create mutation for lost/found item
   const createItem = api.lostFound.create.useMutation({
@@ -306,8 +475,19 @@ export default function LostFoundPostPage() {
                           <Input 
                             placeholder="e.g., Central Park, Main St & 5th Ave" 
                             {...field} 
+                            onChange={handleLocationChange}
                           />
                         </FormControl>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={searchAddress} 
+                          className="flex items-center gap-2"
+                          disabled={isGeocodingLoading}
+                        >
+                          <Search size={16} />
+                          {isGeocodingLoading ? "Searching..." : "Search"}
+                        </Button>
                         <div className={`
                           rounded p-2 flex-shrink-0 h-10 w-10 flex items-center justify-center
                           ${location ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}
@@ -444,6 +624,24 @@ export default function LostFoundPostPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Geocode Results Drawer */}
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DrawerContent className='px-4 flex flex-col gap-4'>
+        <DrawerTitle>Select an Address</DrawerTitle>
+          <div className="space-y-4">
+            {geocodeResults.map((result, index) => (
+              <div 
+                key={index} 
+                className="p-2 border rounded cursor-pointer hover:bg-gray-100"
+                onClick={() => selectAddress(result)}
+              >
+                {result.display_name}
+              </div>
+            ))}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

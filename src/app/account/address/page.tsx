@@ -78,40 +78,127 @@ export default function AddressPage() {
     }
   });
 
-  // Get current location on page load
-  useEffect(() => {
-    if (typeof window !== "undefined" && "geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords }) => {
-          const { latitude, longitude } = coords;
-          setLocation({ latitude, longitude });
-          
-          // Don't get address from coordinates if we already have an address
-          if (!address) {
-            fetchAddressFromCoordinates(latitude, longitude);
-          }
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          setLocation(null);
-        }
-      );
-    }
-  }, [address]);
+  // Track if we've loaded the user address from database
+  const [hasLoadedUserAddress, setHasLoadedUserAddress] = useState(false);
 
-  // Update fields if user has an address
+  // Completely rewritten initialization logic with strict control flow
   useEffect(() => {
-    if (userAddress) {
-      setAddress(userAddress.address);
-      setManualLat(userAddress.latitude);
-      setManualLong(userAddress.longitude);
-      // Also set these as selected coordinates
-      setSelectedCoordinates({
-        latitude: userAddress.latitude,
-        longitude: userAddress.longitude
-      });
+    // This is a crucial flag to prevent race conditions
+    let isMounted = true;
+    
+    const initializeAddressData = async () => {
+      if (!isMounted) return;
+      
+      // CASE 1: User has a saved address - load it and DO NOT fetch from browser location
+      if (userAddress && userAddress.address) {
+        console.log("INITIALIZE: Using saved address from database:", userAddress);
+        
+        // Set all address fields from database
+        setAddress(userAddress.address);
+        setManualLat(userAddress.latitude || '');
+        setManualLong(userAddress.longitude || '');
+        setSelectedCoordinates({
+          latitude: userAddress.latitude || '',
+          longitude: userAddress.longitude || ''
+        });
+        
+        // Get browser location ONLY for reference/verification, NOT for setting address
+        if (typeof window !== "undefined" && "geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+              if (!isMounted) return;
+              const { latitude, longitude } = coords;
+              console.log("Got browser location for REFERENCE ONLY");
+              // Only set the location state, DO NOT modify the address
+              setLocation({ latitude, longitude });
+            },
+            (error) => {
+              if (!isMounted) return;
+              console.error("Error getting browser location:", error);
+              setLocation(null);
+            }
+          );
+        }
+        
+        // EARLY RETURN to prevent the "new user" code path from executing
+        return;
+      }
+      
+      // CASE 2: User has NO saved address - only now try to get browser location
+      if (!userAddress || !userAddress.address) {
+        console.log("NO SAVED ADDRESS: Trying browser location");
+        
+        if (typeof window !== "undefined" && "geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            async ({ coords }) => {
+              if (!isMounted) return;
+              
+              const { latitude, longitude } = coords;
+              setLocation({ latitude, longitude });
+              
+              // Only for new users without an address
+              try {
+                console.log("NEW USER: Getting address from browser location");
+                const response = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                );
+                
+                if (!isMounted) return;
+                
+                const data = await response.json();
+                if (data?.display_name) {
+                  console.log('NEW USER: Setting initial address:', data.display_name);
+                  setAddress(data.display_name);
+                  setSelectedCoordinates({
+                    latitude: latitude.toString(),
+                    longitude: longitude.toString()
+                  });
+                }
+              } catch (error) {
+                console.error("Error reverse geocoding:", error);
+              }
+            },
+            (error) => {
+              if (!isMounted) return;
+              console.error("Error getting location:", error);
+              setLocation(null);
+            }
+          );
+        }
+      }
+    };
+    
+    // Execute initialization
+    initializeAddressData();
+    
+    // Cleanup function to prevent state updates after unmounting
+    return () => {
+      isMounted = false;
+    };
+  }, [userAddress]); // This dependency is needed to re-run when userAddress changes
+  
+  // Remove the fetchAddressFromCoordinates function and replace it with a controlled version
+  const manuallySetAddressFromCoordinates = async (lat: number, lon: number) => {
+    console.log(`Manually getting address from coordinates: ${lat}, ${lon}`);
+    
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+      );
+      
+      const data = await response.json();
+      if (data?.display_name) {
+        console.log('Manually setting address to:', data.display_name);
+        setAddress(data.display_name);
+        setSelectedCoordinates({
+          latitude: lat.toString(),
+          longitude: lon.toString()
+        });
+      }
+    } catch (error) {
+      console.error("Error reverse geocoding:", error);
     }
-  }, [userAddress]);
+  };
 
   // Search for address and get coordinates
   const searchAddress = async () => {
@@ -151,22 +238,6 @@ export default function AddressPage() {
     display_name: string;
     [key: string]: unknown;
   }
-
-  // Get address from coordinates (reverse geocoding)
-  const fetchAddressFromCoordinates = async (lat: number, lon: number) => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-      );
-      
-      const data = await response.json() as ReverseGeocodingResult;
-      if (data?.display_name) {
-        setAddress(data.display_name);
-      }
-    } catch (error) {
-      console.error("Error reverse geocoding:", error);
-    }
-  };
 
   // Select an address from geocoding results
   const selectAddress = (result: GeocodingResult) => {
@@ -331,6 +402,33 @@ export default function AddressPage() {
                 </div>
               </div>
 
+              {/* Add Use Current Location button */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  if (location) {
+                    console.log("Manually using current browser location");
+                    manuallySetAddressFromCoordinates(location.latitude, location.longitude);
+                    setSelectedCoordinates({
+                      latitude: location.latitude.toString(),
+                      longitude: location.longitude.toString()
+                    });
+                  } else {
+                    toast({
+                      title: "Location not available",
+                      description: "Please enable location services in your browser.",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+                disabled={!location}
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                Use My Current Location
+              </Button>
+
               <div className="flex items-center gap-2">
                 <input 
                   type="checkbox"
@@ -477,8 +575,8 @@ export default function AddressPage() {
             
             {verificationStatus === 'success' && (
               <>
-                <div className="bg-green-100 dark:bg-green-900/30 rounded-full p-6 mb-4">
-                  <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+                <div className="bg-green-100  rounded-full p-6 mb-4">
+                  <CheckCircle2 className="h-8 w-8 text-green-600 " />
                 </div>
                 <p className="font-medium text-green-600 dark:text-green-400">{verificationMessage}</p>
               </>
