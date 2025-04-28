@@ -114,7 +114,7 @@ export default function ChatComponent({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="border-b border-gray-200 p-4 bg-primary/10">
+      <div className="border-b border-gray-200 p-4 py-3 bg-primary/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="flex-shrink-0 mr-3">

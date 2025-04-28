@@ -183,5 +183,59 @@ export const chatRouter = createTRPCRouter({
         };
       }
     }),
+
+  getConversationDetails: protectedProcedure
+    .input(z.object({ conversation_id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.userId;
+      if (!userId) throw new Error("Unauthorized");
+
+      try {
+        // Get the conversation details
+        const { data: conversation, error } = await supabase
+          .from("conversations")
+          .select("*")
+          .eq("id", input.conversation_id)
+          .single();
+
+        if (error) throw new Error(error.message);
+        if (!conversation) throw new Error("Conversation not found");
+
+        // Verify that the current user is part of this conversation
+        if (conversation.sender_id !== userId && conversation.receiver_id !== userId) {
+          throw new Error("You don't have permission to access this conversation");
+        }
+
+        // Determine who the partner is in this conversation
+        const partnerId = conversation.sender_id === userId 
+          ? conversation.receiver_id 
+          : conversation.sender_id;
+
+        // Get post details if needed
+        let postTitle = "";
+        try {
+          const post = await ctx.db.query.posts.findFirst({
+            where: (posts, { eq }) => eq(posts.id, parseInt(conversation.post_id)),
+            columns: { skill: true }
+          });
+          
+          postTitle = post?.skill ?? "";
+        } catch (error) {
+          console.error("Error fetching post details:", error);
+        }
+
+        return {
+          id: conversation.id,
+          postId: conversation.post_id,
+          postTitle,
+          partnerId,
+          status: conversation.status,
+          createdAt: conversation.created_at
+        };
+      } catch (error) {
+        console.error("Error fetching conversation details:", error);
+        throw error;
+      }
+    }),
 });
 

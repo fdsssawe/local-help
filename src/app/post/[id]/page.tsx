@@ -157,7 +157,7 @@ export default function PostPage() {
             <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-md">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={post.creatorImage || undefined} alt={post.creatorName} />
+                  <AvatarImage src={post.creatorImage ?? undefined} alt={post.creatorName} />
                   <AvatarFallback><User size={16} /></AvatarFallback>
                 </Avatar>
                 <div>
