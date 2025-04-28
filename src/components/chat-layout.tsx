@@ -8,6 +8,7 @@ import Image from "next/image";
 import ChatComponent from "./chat";
 import { cn } from "~/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { UserRating } from "./ui/user-rating";
 
 export default function ChatLayout() {
   const router = useRouter();
@@ -88,37 +89,49 @@ export default function ChatLayout() {
               </div>
               )
             ) : (
-              chats.map((chat: { id: string; partner_avatar?: string; partner_name?: string; post_title: string }) => (
+              chats.map((chat: { id: string; partner_avatar?: string; partner_name?: string; partner_id?: string; post_title: string }) => (
                 <motion.div
                   initial={{ opacity: 0.8 }}
                   animate={{ opacity: 1 }}
                   key={chat.id}
                   className={cn(
-                    "flex items-center px-3 py-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-200",
+                    "flex flex-col px-3 py-3 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-200",
                     chat.id === activeConversationId && "bg-primary/40"
                   )}
                   onClick={() => handleChatSelect(chat.id)}
                 >
-                  <div className="flex-shrink-0 mr-3">
-                    {chat.partner_avatar ? (
-                      <div className="relative h-12 w-12 rounded-full overflow-hidden">
-                        <Image
-                          src={chat.partner_avatar}
-                          alt={chat.partner_name ?? "User"}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                        <span className="text-gray-500">{chat.partner_name?.charAt(0) ?? "?"}</span>
-                      </div>
-                    )}
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 mr-3">
+                      {chat.partner_avatar ? (
+                        <div className="relative h-12 w-12 rounded-full overflow-hidden">
+                          <Image
+                            src={chat.partner_avatar}
+                            alt={chat.partner_name ?? "User"}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500">{chat.partner_name?.charAt(0) ?? "?"}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col text-left overflow-hidden">
+                      <span className="font-semibold truncate">{chat.post_title}</span>
+                      <span className="text-sm text-gray-500 truncate">with {chat.partner_name ?? "Unknown User"}</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col text-left overflow-hidden">
-                    <span className="font-semibold truncate">{chat.post_title}</span>
-                    <span className="text-sm text-gray-500 truncate">with {chat.partner_name ?? "Unknown User"}</span>
-                  </div>
+                  
+                  {chat.partner_id && (
+                    <div className="ml-15 mt-2">
+                      <UserRating 
+                        userId={chat.partner_id} 
+                        size="sm" 
+                        showRatingDialog={false} 
+                      />
+                    </div>
+                  )}
                 </motion.div>
               ))
             )}

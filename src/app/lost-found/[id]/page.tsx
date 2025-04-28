@@ -52,6 +52,7 @@ import { toast } from "~/components/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import Spinner from '~/components/ui/spinner';
 import { Separator } from "~/components/ui/separator";
+import { UserRating } from "~/components/ui/user-rating";
 
 export default function ItemPage() {
   const params = useParams();
@@ -338,23 +339,32 @@ export default function ItemPage() {
             <Separator />
             
             {/* Posted by */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={item.creatorImage || undefined} />
-                  <AvatarFallback>
-                    <User size={18} />
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">Posted by</p>
-                  <p className="text-sm text-muted-foreground">{item.creatorName}</p>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <Avatar>
+                    <AvatarImage src={item.creatorImage || undefined} />
+                    <AvatarFallback>
+                      <User size={18} />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">Posted by</p>
+                    <p className="text-sm text-muted-foreground">{item.creatorName}</p>
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <Clock size={14} className="inline mr-1" />
+                  <span>Posted {formatDate(item.createdAt)}</span>
                 </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                <Clock size={14} className="inline mr-1" />
-                <span>Posted {formatDate(item.createdAt)}</span>
-              </div>
+              
+              {/* User Rating */}
+              {item.userId && (
+                <div className="ml-12">
+                  <UserRating userId={item.userId} size="sm" />
+                </div>
+              )}
             </div>
           </CardContent>
 

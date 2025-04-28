@@ -11,6 +11,7 @@ import {
   pgEnum,
   pgTable,
   boolean,
+  integer,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `local_help_${name}`);
@@ -77,6 +78,15 @@ export const userAddresses = pgTable("user_addresses", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const userRatings = pgTable("user_ratings", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  raterId: varchar("rater_id", { length: 255 }).notNull(),
+  score: integer("score").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const lostFoundItems = pgTable("lost_found_items", {
   id: serial("id").primaryKey(),
   type: varchar("type", { length: 10 }).notNull(), // "lost" or "found"
@@ -98,6 +108,7 @@ export const lostFoundItems = pgTable("lost_found_items", {
 
 export type UserAddress = InferSelectModel<typeof userAddresses>;
 export type LostFoundItem = InferSelectModel<typeof lostFoundItems>;
+export type UserRating = InferSelectModel<typeof userRatings>;
 
 
 

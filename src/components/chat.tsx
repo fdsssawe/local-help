@@ -7,6 +7,7 @@ import { supabase } from "~/lib/supabase";
 import { cn } from "~/lib/utils";
 import Spinner from "./ui/spinner";
 import Image from "next/image";
+import { UserRating } from "./ui/user-rating";
 
 interface Message {
   id: string;
@@ -44,6 +45,13 @@ export default function ChatComponent({
       enabled: !!conversation_id
     }
   );
+
+  const { data: conversationDetails } = api.chat.getConversationDetails.useQuery(
+    { conversation_id },
+    { enabled: !!conversation_id && !!user }
+  );
+
+  const partnerId = conversationDetails?.partnerId || undefined;
 
   const { mutate: sendMessage } = api.chat.sendMessage.useMutation({
     onSuccess: () => {
@@ -107,26 +115,35 @@ export default function ChatComponent({
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="border-b border-gray-200 p-4 bg-primary/10">
-        <div className="flex items-center">
-          <div className="flex-shrink-0 mr-3">
-            {partner_avatar ? (
-              <div className="relative h-7 w-7 rounded-full overflow-hidden">
-                <Image
-                  src={partner_avatar}
-                  alt={partner_name ?? "User"}
-                  width={28}
-                  height={28}
-                />
-              </div>
-            ) : (
-              <div className="h-7 w-7 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500">{partner_name?.charAt(0) ?? "?"}</span>
-              </div>
-            )}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 mr-3">
+              {partner_avatar ? (
+                <div className="relative h-7 w-7 rounded-full overflow-hidden">
+                  <Image
+                    src={partner_avatar}
+                    alt={partner_name ?? "User"}
+                    width={28}
+                    height={28}
+                  />
+                </div>
+              ) : (
+                <div className="h-7 w-7 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500">{partner_name?.charAt(0) ?? "?"}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <h2 className="text-lg font-semibold">{partner_name ?? "Chat"}</h2>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <h2 className="text-lg font-semibold">{partner_name ?? "Chat"}</h2>
-          </div>
+          {partnerId && (
+            <UserRating 
+              userId={partnerId}
+              size="sm"
+              showRatingDialog={true}
+            />
+          )}
         </div>
       </div>
       

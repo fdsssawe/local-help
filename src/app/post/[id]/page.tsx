@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "~/components/ui/card";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { UserRating } from "~/components/ui/user-rating";
 
 export default function PostPage() {
   const { id } = useParams();
@@ -153,15 +154,22 @@ export default function PostPage() {
             </div>
 
             {/* Provider Information */}
-            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-md">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={post.creatorImage || undefined} alt={post.creatorName} />
-                <AvatarFallback><User size={16} /></AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-medium">{post.creatorName}</p>
-                <p className="text-xs text-muted-foreground">Service Provider</p>
+            <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-md">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={post.creatorImage || undefined} alt={post.creatorName} />
+                  <AvatarFallback><User size={16} /></AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium">{post.creatorName}</p>
+                  <p className="text-xs text-muted-foreground">Service Provider</p>
+                </div>
               </div>
+              
+              {/* User Rating Component */}
+              {post.userId && (
+                <UserRating userId={post.userId} size="sm" />
+              )}
             </div>
           </div>
         </CardContent>

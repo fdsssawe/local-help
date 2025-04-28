@@ -580,9 +580,8 @@ export default function LostFoundPostPage() {
                   />
                 )}
 
-                {/* Location Warning */}
                 {!location && (
-                  <Alert variant="warning" className="mt-4">
+                  <Alert variant="default" className="mt-4">
                     <MapPin className="h-4 w-4" />
                     <AlertTitle>Location required</AlertTitle>
                     <AlertDescription>
