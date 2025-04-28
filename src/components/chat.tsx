@@ -22,6 +22,8 @@ interface ChatComponentProps {
   post_title?: string;
 }
 
+const MAX_MESSAGE_LENGTH = 500;
+
 export default function ChatComponent({ 
   conversation_id,
   partner_name,
@@ -39,7 +41,6 @@ export default function ChatComponent({
     { conversation_id },
     { 
       refetchOnWindowFocus: false,
-      // This ensures we'll refetch when conversation_id changes
       enabled: !!conversation_id
     }
   );
@@ -47,29 +48,24 @@ export default function ChatComponent({
   const { mutate: sendMessage } = api.chat.sendMessage.useMutation({
     onSuccess: () => {
       setNewMessage("");
-      // Invalidate the query for the current conversation to refresh messages
       utils.chat.getMessages.invalidate({ conversation_id });
     },
   });
 
-  // Reset messages when switching conversations
   useEffect(() => {
     setMessages([]);
   }, [conversation_id]);
 
-  // Update messages when initialMessages changes
   useEffect(() => {
     if (initialMessages) {
       setMessages(initialMessages);
     }
   }, [initialMessages]);
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // ✅ Supabase Realtime Subscription
   useEffect(() => {
     const channel = supabase
       .channel(`chat-${conversation_id}`)
@@ -90,7 +86,6 @@ export default function ChatComponent({
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
     
-    // Optimistically add the message to the UI
     const optimisticMessage: Message = {
       id: `temp-${Date.now()}`,
       sender_id: user?.id ?? '',
@@ -148,7 +143,7 @@ export default function ChatComponent({
           messages.map((msg) => (
             <div key={msg.id} className={cn("flex", msg.sender_id === user?.id ? "justify-end" : "justify-start")}>
               <div
-                className={`p-3 rounded-lg max-w-sm ${
+                className={`p-3 rounded-lg max-w-sm break-words whitespace-pre-wrap ${
                   msg.sender_id === user?.id ? "bg-primary/40 text-text" : "bg-gray-200 text-black"
                 }`}
               >
@@ -161,26 +156,37 @@ export default function ChatComponent({
       </div>
       
       <div className="border-t border-gray-200 p-4">
-        <div className="flex">
+        <div className="flex flex-col">
           <textarea
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value.length <= MAX_MESSAGE_LENGTH) {
+                setNewMessage(e.target.value);
+              }
+            }}
             onKeyDown={handleKeyPress}
-            className="flex-1 p-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre-wrap break-words"
             placeholder="Type a message..."
-            rows={2}
+            rows={3}
+            maxLength={MAX_MESSAGE_LENGTH}
+            style={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
           />
-          <button 
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim()} 
-            className={`ml-2 px-4 rounded-lg flex items-center justify-center ${
-              newMessage.trim() ? 'bg-accent text-white' : 'bg-secondary text-white cursor-not-allowed'
-            }`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-              <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
-            </svg>
-          </button>
+          <div className="flex justify-between items-center mt-2">
+            <span className={`text-xs ${newMessage.length > MAX_MESSAGE_LENGTH ? 'text-red-500' : 'text-muted-foreground'}`}>
+              {newMessage.length} / {MAX_MESSAGE_LENGTH}
+            </span>
+            <button 
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim() || newMessage.length > MAX_MESSAGE_LENGTH}
+              className={`ml-2 px-4 py-2 rounded-lg flex items-center justify-center ${
+                newMessage.trim() && newMessage.length <= MAX_MESSAGE_LENGTH ? 'bg-accent text-white' : 'bg-secondary text-white cursor-not-allowed'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

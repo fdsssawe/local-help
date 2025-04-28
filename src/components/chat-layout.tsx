@@ -18,9 +18,8 @@ export default function ChatLayout() {
   const [isChangingChat, setIsChangingChat] = useState(false);
 
   useEffect(() => {
-    // Handle all possible parameter names (id, active, conversation)
-    const id = searchParams?.get("id") || 
-               searchParams?.get("active") || 
+    const id = searchParams?.get("id") ?? 
+               searchParams?.get("active") ?? 
                searchParams?.get("conversation");
                
     if (id && id !== activeConversationId) {
@@ -60,33 +59,17 @@ export default function ChatLayout() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleChatSelect = (chatId: string) => {
-    if (chatId === activeConversationId) return; // Skip if already selected
+    if (chatId === activeConversationId) return;
     setIsChangingChat(true);
     router.push(`/chats?id=${chatId}`, { scroll: false });
   };
 
-  // When selecting a conversation, update URL
-  const handleConversationSelect = (conversation: any) => {
-    setActiveChat(conversation);
-    
-    // Update URL without refreshing the page
-    if (typeof window !== 'undefined') {
-      window.history.replaceState(
-        {}, 
-        '', 
-        `/chats?active=${conversation.id}`
-      );
-    }
-  };
-
-  // Find the active chat's details
   const activeChat = activeConversationId
     ? chats.find(chat => chat.id === activeConversationId)
     : null;
 
   return (
     <div className="flex h-full w-full border-gray-200 border-t">
-      {/* Left sidebar with fixed header and scrollable chat list */}
       <div className="w-1/3 border-r border-gray-200 h-full flex flex-col bg-white">
         <div className="p-4 border-b border-gray-200 bg-primary/10 flex-shrink-0">
           <h2 className="text-xl font-bold">Conversations</h2>
