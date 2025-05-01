@@ -7,25 +7,21 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 
-// Import custom components
 import { FloatingCard } from "~/components/landing/floating-card";
 import { TextHoverEffect } from "~/components/landing/text-hover-effect";
 import { HoverCard3D } from "~/components/landing/hover-card-3d";
 import { AnimatedFeatures } from "~/components/landing/animated-features";
 import { TestimonialSlider } from "~/components/landing/testimonial-slider";
 
-// Import lucide icons
 import { 
   Users, Handshake, MapPin, Award, 
   Star, MessageSquare, ArrowRight,
   ShieldCheck, Clock, Heart
 } from "lucide-react";
 
-// Import hero image
 import hero from "../../assets/hero.svg";
 
 export default function HomePage() {
-  // References for scroll animations
   const featuresRef = useRef(null);
   const testimonialsRef = useRef(null);
   const howItWorksRef = useRef(null);
@@ -34,7 +30,6 @@ export default function HomePage() {
   const testimonialsInView = useInView(testimonialsRef, { once: true, margin: "-100px" });
   const howItWorksInView = useInView(howItWorksRef, { once: true, margin: "-100px" });
 
-  // Typewriter words
   const words = [
     { text: "Community" },
     { text: "Skills" },
@@ -43,7 +38,6 @@ export default function HomePage() {
     { text: "Support" },
   ];
 
-  // Features data
   const features = [
     {
       icon: <Handshake className="h-6 w-6 text-primary" />,
@@ -77,7 +71,6 @@ export default function HomePage() {
     },
   ];
 
-  // Testimonials data
   const testimonials = [
     {
       content: "Local Help connected me with a neighbor who taught me how to fix my bike. In return, I helped with their garden. It's amazing how we can help each other!",
@@ -98,10 +91,8 @@ export default function HomePage() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* Animated gradient background */}
       <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]"></div>
       
-      {/* Hero Section */}
       <section className="relative w-full px-4 py-20 md:py-32 overflow-hidden">
         <div className="container mx-auto">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
@@ -196,14 +187,12 @@ export default function HomePage() {
                 </FloatingCard>
               </motion.div>
               
-              {/* Background decorative elements */}
               <div className="absolute -z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-primary/10 via-accent/10 to-secondary/10 rounded-full blur-3xl" />
             </div>
           </div>
         </div>
       </section>
       
-      {/* Features Section */}
       <section 
         ref={featuresRef} 
         className="w-full px-4 py-20 md:py-32 bg-white"
@@ -228,7 +217,6 @@ export default function HomePage() {
         </div>
       </section>
       
-      {/* How It Works Section */}
       <section 
         ref={howItWorksRef} 
         className="w-full px-4 py-20 md:py-32 bg-secondary/50"
@@ -297,7 +285,6 @@ export default function HomePage() {
         </div>
       </section>
       
-      {/* Testimonials Section */}
       <section 
         ref={testimonialsRef}
         className="w-full px-4 py-20 md:py-32 bg-white"
@@ -328,7 +315,6 @@ export default function HomePage() {
         </div>
       </section>
       
-      {/* CTA Section */}
       <section className="w-full px-4 py-20 md:py-24 bg-gradient-to-br from-primary/90 via-primary to-accent text-white">
         <div className="container mx-auto">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto">

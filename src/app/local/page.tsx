@@ -5,7 +5,6 @@ import { Search, SlidersHorizontal, Plus, MapPin } from 'lucide-react';
 import { GetLocal } from '~/components/local';
 import Link from 'next/link';
 
-// Import shadcn components
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import {
@@ -25,45 +24,37 @@ import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 
 const Page = () => {
-    // State for search and filters
     const [searchQuery, setSearchQuery] = useState('');
-    const [distanceFilter, setDistanceFilter] = useState(0.5); // Default 500m radius
+    const [distanceFilter, setDistanceFilter] = useState(0.5);
     const [sortOption, setSortOption] = useState('recent');
     const [filtersApplied, setFiltersApplied] = useState(false);
     const [appliedDistance, setAppliedDistance] = useState<number | undefined>(undefined);
 
-    // Handle search input changes
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
     };
 
-    // Handle distance slider changes
     const handleDistanceChange = (value: number[]) => {
         setDistanceFilter(value[0]);
     };
 
-    // Apply filters
     const applyFilters = () => {
         setAppliedDistance(distanceFilter);
         setFiltersApplied(true);
     };
 
-    // Reset filters - update default to 500m
     const resetFilters = () => {
         setDistanceFilter(0.5);
         setAppliedDistance(undefined);
         setFiltersApplied(false);
     };
 
-    // Immediately apply search filter but not distance filter
     useEffect(() => {
         if (filtersApplied) {
-            // Re-apply distance when slider changes if filters are already applied
             setAppliedDistance(distanceFilter);
         }
     }, [searchQuery, filtersApplied]);
 
-    // Format distance for display (convert to m if less than 1km)
     const formatDistanceLabel = (distance: number) => {
         return distance < 1 
             ? `${Math.round(distance * 1000)}m` 
@@ -72,7 +63,6 @@ const Page = () => {
 
     return (
         <div className="w-full min-h-[calc(100vh-105px)] bg-background overflow-x-hidden">
-            {/* Hero section */}
             <div className="w-full from-primary/5 to-secondary/5 py-10 px-4 border-b border-accent/10">
                 <div className="max-w-6xl mx-auto">
                     <h1 className="text-3xl md:text-4xl font-bold mb-2">
@@ -87,7 +77,6 @@ const Page = () => {
                 </div>
             </div>
 
-            {/* Search and filters section */}
             <div className="w-full bg-background py-4 px-4 mb-6 border-b border-accent/10 sticky top-[57px] z-40">
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full">
@@ -138,43 +127,43 @@ const Page = () => {
                                             step={0.1}
                                             value={[distanceFilter]}
                                             onValueChange={handleDistanceChange}
-                                            className="py-4"
                                         />
-                                        <div className="flex justify-between text-xs text-muted-foreground">
-                                            <span>100m</span>
-                                            <span>800m</span>
-                                            <span>1.5km</span>
-                                        </div>
                                     </div>
 
-                                    <Separator />
-                                    
-                                    <div className="flex justify-end gap-2">
-                                        <Button variant="outline" size="sm" onClick={resetFilters}>
+                                    <div className="flex justify-between pt-2">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={resetFilters}
+                                            disabled={!filtersApplied}
+                                        >
                                             Reset
                                         </Button>
-                                        <Button size="sm" onClick={applyFilters}>
-                                            Apply Filters
+                                        <Button 
+                                            variant="default" 
+                                            size="sm"
+                                            onClick={applyFilters}
+                                        >
+                                            Apply
                                         </Button>
                                     </div>
                                 </div>
                             </PopoverContent>
                         </Popover>
-                        
+
                         <Link href="/post">
-                            <Button className="flex items-center gap-2">
+                            <Button variant="default" className="flex items-center gap-2">
                                 <Plus size={16} />
-                                <span>New Post</span>
+                                <span className="hidden sm:inline">New Post</span>
+                                <span className="inline sm:hidden">Post</span>
                             </Button>
                         </Link>
                     </div>
                 </div>
             </div>
 
-            {/* Main content section */}
-            <div className="max-w-6xl w-full mx-auto pb-16">
+            <div className="max-w-6xl mx-auto px-4 pb-10">
                 <div className="bg-white rounded-xl shadow-sm border border-accent/10 p-4 md:p-6">
-                    {/* Results stats and sort options */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-4 border-b border-accent/10">
                         <div>
                             <h2 className="font-semibold text-lg">Available posts</h2>
@@ -203,7 +192,6 @@ const Page = () => {
                         </div>
                     </div>
                     
-                    {/* Local content from GetLocal component */}
                     <div className="w-full">
                         <GetLocal 
                             searchQuery={searchQuery}

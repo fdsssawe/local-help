@@ -20,19 +20,16 @@ export default function PostPage() {
   const postId = Array.isArray(id) ? id[0] : id;
   const [isContactLoading, setIsContactLoading] = useState(false);
 
-  // Fetch post data
   const { data: post, isLoading, error } = api.post.getById.useQuery(
     { postId },
     { enabled: !!postId }
   );
 
-  // Check if there's an existing conversation for this post
   const checkConversation = api.chat.checkConversationExists.useQuery(
     { post_id: postId },
     { enabled: !!postId && !!user }
   );
 
-  // Start conversation mutation
   const { mutate: startConversation } = api.chat.startChat.useMutation({
     onSuccess: (data) => {
       setIsContactLoading(false);
@@ -43,7 +40,6 @@ export default function PostPage() {
     }
   });
 
-  // Handle contacting the provider
   const handleContactProvider = () => {
     if (!user) {
       router.push("/sign-in");
@@ -55,10 +51,8 @@ export default function PostPage() {
     setIsContactLoading(true);
     
     if (checkConversation.data?.exists && checkConversation.data?.conversation_id) {
-      // Navigate to existing conversation
       router.push(`/chats?id=${checkConversation.data.conversation_id}`);
     } else {
-      // Start a new conversation
       startConversation({
         post_id: postId,
         receiver_id: post.userId || "",
@@ -66,7 +60,6 @@ export default function PostPage() {
     }
   };
 
-  // Format the date
   const formatDate = (dateStr: string | Date | undefined) => {
     if (!dateStr) return "Unknown date";
     try {
@@ -80,7 +73,6 @@ export default function PostPage() {
     }
   };
 
-  // Format distance
   const formatDistance = (distance: number | undefined) => {
     if (typeof distance !== "number") return "Unknown distance";
     
@@ -89,7 +81,6 @@ export default function PostPage() {
       : `${distance.toFixed(1)} km`;
   };
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="container mx-auto py-16 flex justify-center">
@@ -98,7 +89,6 @@ export default function PostPage() {
     );
   }
 
-  // Show error state
   if (error || !post) {
     return (
       <div className="container mx-auto py-16">
@@ -113,7 +103,6 @@ export default function PostPage() {
     );
   }
 
-  // Check if this is the user's own post
   const isOwnPost = user?.id === post.userId;
 
   return (
@@ -139,7 +128,6 @@ export default function PostPage() {
         
         <CardContent className="pt-6 pb-4 space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            {/* Post Meta Information */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
@@ -153,7 +141,6 @@ export default function PostPage() {
               </div>
             </div>
 
-            {/* Provider Information */}
             <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-md">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
@@ -166,7 +153,6 @@ export default function PostPage() {
                 </div>
               </div>
               
-              {/* User Rating Component */}
               {post.userId && (
                 <UserRating userId={post.userId} size="sm" />
               )}

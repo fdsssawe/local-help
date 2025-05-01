@@ -41,7 +41,6 @@ export function CreatePost() {
   const { user } = useUser();
   const router = useRouter();
   
-  // Fetch user's registered address
   const { data: userAddress } = api.address.getUserAddress.useQuery(undefined, {
     enabled: !!user,
   });
@@ -71,7 +70,6 @@ export function CreatePost() {
   })
 
   useEffect(() => {
-    // Only get browser location if not using registered address
     if (!useRegisteredAddress && typeof window !== "undefined" && 'geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(({ coords }) => {
         const { latitude, longitude } = coords;
@@ -80,10 +78,8 @@ export function CreatePost() {
     }
   }, [useRegisteredAddress]);
 
-  // When we get the user address data, check if it exists
   useEffect(() => {
     if (userAddress) {
-      // If we have a registered address, default to using it
       setUseRegisteredAddress(true);
     }
   }, [userAddress]);
@@ -101,7 +97,6 @@ export function CreatePost() {
     createPost.mutate({
       ...data,
       userId: user?.id ?? "",
-      // If using registered address, we'll pass null coordinates and the flag
       latitude: !useRegisteredAddress ? location?.latitude.toString() ?? "0" : "0",
       longitude: !useRegisteredAddress ? location?.longitude.toString() ?? "0" : "0",
       useRegisteredAddress: useRegisteredAddress && !!userAddress,
@@ -128,7 +123,6 @@ export function CreatePost() {
 
   return (
     <div className="w-full max-w-[18rem]">
-      {/* Location selector */}
       {userAddress && (
         <Card className="p-3 mb-4 bg-secondary/10">
           <div className="flex items-center justify-between mb-2">
@@ -150,7 +144,6 @@ export function CreatePost() {
         </Card>
       )}
       
-      {/* Post form */}
       <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
         <FormField
